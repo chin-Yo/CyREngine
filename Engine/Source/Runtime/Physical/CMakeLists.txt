@@ -1,5 +1,4 @@
 
-
 set(TARGET_NAME PhysicsEngine)
 # 设置C++标准
 set(CMAKE_CXX_STANDARD 17)
@@ -26,7 +25,9 @@ target_include_directories(${TARGET_NAME} PUBLIC
 )
 
 # 为IDE组织文件夹结构
+set_property(TARGET ${TARGET_NAME} PROPERTY VS_GLOBAL_DisableExternalDependencies true)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "Runtime")
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/Source PREFIX "Source" FILES ${LIB_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/Include PREFIX "Include" FILES ${LIB_HEADERS})
-set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "Runtime/Physical")
+

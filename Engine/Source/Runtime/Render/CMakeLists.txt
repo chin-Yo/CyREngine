@@ -17,9 +17,10 @@ file(GLOB_RECURSE LIB_HEADERS
     "Include/*.h"
     "Include/*.hpp"
 )
+#message(STATUS "LIB_HEADERS: ${LIB_HEADERS}")
 
 # 创建exe
-add_executable(${TARGET_NAME} WIN32 ${LIB_SOURCES})
+add_executable(${TARGET_NAME} WIN32 ${LIB_SOURCES} ${LIB_HEADERS})
 
 # 设置包含目录
 target_include_directories(${TARGET_NAME} PUBLIC 
@@ -55,7 +56,11 @@ target_link_libraries(${TARGET_NAME} PUBLIC vulkan_sdk)
 
 
 # 为IDE组织文件夹结构
+# 禁用 VS 自动扫描外部依赖
+set_property(TARGET ${TARGET_NAME} PROPERTY VS_GLOBAL_DisableExternalDependencies true)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "Runtime")
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/Source PREFIX "Source" FILES ${LIB_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/Include PREFIX "Include" FILES ${LIB_HEADERS})
-set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "Runtime/Physical")
+
+message(${CMAKE_CURRENT_SOURCE_DIR}/Include)

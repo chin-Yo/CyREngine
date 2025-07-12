@@ -1,7 +1,18 @@
 #include "Misc/Paths.hpp"
+#if defined(_WIN32)
+    #include <windows.h>  // For GetModuleFileName
+#elif defined(__linux__)
+    #include <unistd.h>   // For readlink
+    #include <limits.h>   // For PATH_MAX
+#elif defined(__APPLE__)
+    #include <mach-o/dyld.h> // For _NSGetExecutablePath
+    #include <limits.h>      // For PATH_MAX
+#else
+#error "Unsupported platform"
+#endif
 #include <filesystem>
 #include <stdexcept>
-#include <libloaderapi.h>
+
 
 namespace fs = std::filesystem;
 
@@ -28,13 +39,11 @@ std::string Paths::GetCurrentExecutablePath()
 
 std::string Paths::GetAssetPath()
 {
-    // 获取当前可执行文件所在目录
     fs::path exePath = fs::canonical(GetCurrentExecutablePath());
     fs::path binDir = exePath.parent_path();
 
-    // 向上查找最多 5 层目录，寻找 CMakeLists.txt 所在目录（即项目根目录）
     fs::path projectRoot = binDir;
-    for (int i = 0; i < 5; ++i)
+    for (int i = 0; i < 8; ++i)
     {
         if (fs::exists(projectRoot / "CMakeLists.txt"))
         {
@@ -48,7 +57,7 @@ std::string Paths::GetAssetPath()
         throw std::runtime_error("Could not find project root directory.");
     }
 
-    fs::path assetPath = projectRoot / "resources";
+    fs::path assetPath = projectRoot / "Assets";
 
     if (!fs::exists(assetPath))
     {
@@ -61,4 +70,39 @@ std::string Paths::GetAssetPath()
 std::string Paths::GetAssetFullPath(const std::string &relativePath)
 {
     return GetAssetPath() + "/" + relativePath;
+}
+
+std::string Paths::GetShaderPath()
+{
+    fs::path exePath = fs::canonical(GetCurrentExecutablePath());
+    fs::path binDir = exePath.parent_path();
+
+    fs::path projectRoot = binDir;
+    for (int i = 0; i < 8; ++i)
+    {
+        if (fs::exists(projectRoot / "CMakeLists.txt"))
+        {
+            break;
+        }
+        projectRoot = projectRoot.parent_path();
+    }
+
+    if (!fs::exists(projectRoot / "CMakeLists.txt"))
+    {
+        throw std::runtime_error("Could not find project root directory.");
+    }
+
+    fs::path assetPath = projectRoot / "Engine/Shaders/spv";
+
+    if (!fs::exists(assetPath))
+    {
+        throw std::runtime_error("Shaders/spv directory not found: " + assetPath.string());
+    }
+
+    return assetPath.string();
+}
+
+std::string Paths::GetShaderFullPath(const std::string& relativePath)
+{
+    return GetShaderPath() + "/" + relativePath;
 }

@@ -17,6 +17,7 @@
 #include "glm/gtx/string_cast.hpp"
 #include "Renderer/BlinnPhong.h"
 #include <Intersections.h>
+#include <Misc/Paths.hpp>
 
 // Options and values to display/toggle from the UI
 struct UISettings
@@ -654,14 +655,14 @@ public:
         mesh2->model = new vkglTF::Model();
         mesh1->body = new Body();
         mesh2->body = new Body();
-        mesh1->model->loadFromFile("D:/Desktop/Sphere.gltf", vulkanDevice, queue, glTFLoadingFlags);
+        mesh1->model->loadFromFile(Paths::GetAssetFullPath("Models/Sphere.gltf"), vulkanDevice, queue, glTFLoadingFlags);
         mesh1->prepareUniformBuffers(vulkanDevice);
         mesh1->body->m_position = Vec3(0.0f, 50.0f, 0.1f);
         mesh1->body->m_orientation = Quat(0.0f, 0.0f, 0.0f, 1.0f);
         mesh1->body->m_invMass = 1.f;
         mesh1->body->m_shape = new ShapeSphere(1.0f);
         mesh1->body->m_elasticity = 0.f;
-        mesh2->model->loadFromFile("D:/Desktop/Sphere.gltf", vulkanDevice, queue, glTFLoadingFlags);
+        mesh2->model->loadFromFile(Paths::GetAssetFullPath("Models/Sphere.gltf"), vulkanDevice, queue, glTFLoadingFlags);
         mesh2->prepareUniformBuffers(vulkanDevice);
         mesh2->body->m_position = Vec3(0.0f, 0.0f, 0.0f);
         mesh2->body->m_orientation = Quat(0.0f, 0.0f, 0.0f, 1.0f);
@@ -669,10 +670,10 @@ public:
         mesh2->body->m_shape = new ShapeSphere(10.0f);
         mesh2->m_scale = glm::vec3(10.f);
 
-        mesh1->texture.loadFromPng("D:/Desktop/demo1_22.png", VK_FORMAT_R8G8B8A8_SRGB, vulkanDevice, queue,
+        mesh1->texture.loadFromPng(Paths::GetAssetFullPath("Textures/demo1_22.png"), VK_FORMAT_R8G8B8A8_SRGB, vulkanDevice, queue,
                                    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                                    VK_IMAGE_LAYOUT_GENERAL);
-        mesh2->texture.loadFromPng("D:/Desktop/demo1_22.png", VK_FORMAT_R8G8B8A8_SRGB, vulkanDevice, queue,
+        mesh2->texture.loadFromPng(Paths::GetAssetFullPath("Textures/demo1_22.png"), VK_FORMAT_R8G8B8A8_SRGB, vulkanDevice, queue,
                                    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                                    VK_IMAGE_LAYOUT_GENERAL);
     }
@@ -790,7 +791,7 @@ public:
     {
         imGui = new ImGUI(this);
         imGui->init((float)width, (float)height);
-        imGui->initResources(renderPass, queue, "shaders/glsl/");
+        imGui->initResources(renderPass, queue, Paths::GetShaderFullPath(""));
     }
 
     void buildCommandBuffers() override

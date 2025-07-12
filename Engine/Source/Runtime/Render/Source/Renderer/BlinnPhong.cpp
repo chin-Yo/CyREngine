@@ -3,6 +3,7 @@
 #include "VulkanglTFModel.h"
 #include "VulkanInitializers.hpp"
 #include "VulkanTools.h"
+#include "Misc/Paths.hpp"
 
 BlinnPhongRenderer::BlinnPhongRenderer(VulkanDevice* device) : IRenderer()
 {
@@ -49,8 +50,8 @@ void BlinnPhongRenderer::CreatePipeline(VkRenderPass renderPass)
         vkglTF::VertexComponent::Position, vkglTF::VertexComponent::Normal, vkglTF::VertexComponent::UV
     });;
 
-    shaderStages[0] = loadShader("shaders/glsl/imgui/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-    shaderStages[1] = loadShader("shaders/glsl/imgui/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+    shaderStages[0] = loadShader(Paths::GetShaderFullPath("imgui/scene.vert.spv"), VK_SHADER_STAGE_VERTEX_BIT);
+    shaderStages[1] = loadShader(Paths::GetShaderFullPath("imgui/scene.frag.spv"), VK_SHADER_STAGE_FRAGMENT_BIT);
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(Device->logicalDevice, pipelineCache, 1, &pipelineCI, nullptr, &Pipeline))
 }
 

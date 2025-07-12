@@ -22,10 +22,12 @@ target_include_directories(${TARGET_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Core
     ${RUNTIME_DIR}/Physical/Include
     ${RUNTIME_DIR}/Physical/Include
+    ${RUNTIME_DIR}/Core/Include
     ${THIRD_PARTY_DIR}/stb
     ${THIRD_PARTY_DIR}/ktx/include
     ${THIRD_PARTY_DIR}/tinygltf
     ${THIRD_PARTY_DIR}/imgui
+
 )
 
 if(DEFINED ENV{VULKAN_SDK})
@@ -45,7 +47,7 @@ target_link_libraries(${TARGET_NAME} PUBLIC glm)
 target_link_libraries(${TARGET_NAME} PUBLIC imgui)
 target_link_libraries(${TARGET_NAME} PUBLIC ktx)
 target_link_libraries(${TARGET_NAME} PUBLIC vulkan_sdk)
-target_link_libraries(${TARGET_NAME} PUBLIC Core)
+target_link_libraries(${TARGET_NAME} PUBLIC CyRCore)
 
 # Organize the folder structure for the IDE
 set_property(TARGET ${TARGET_NAME} PROPERTY VS_GLOBAL_DisableExternalDependencies true)

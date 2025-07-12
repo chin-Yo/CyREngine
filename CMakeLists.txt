@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(CyREngine LANGUAGES CXX VERSION 0.1.0)
-
+# ------ Options ----
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
@@ -20,12 +20,21 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
   )
 endif()
 
+# ---- Paths ----
 set(CYRENGINE_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_INSTALL_PREFIX "${CYRENGINE_ROOT_DIR}/bin")
 set(BINARY_ROOT_DIR "${CMAKE_INSTALL_PREFIX}/")
 
-add_subdirectory(ThirdParty)
-# 在项目最顶层的 CMakeLists.txt 中设置
-set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/ThirdParty" CACHE PATH "第三方库根目录")
+# ---- Global properties ----
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+
+# ---- Subdirectories ----
+add_subdirectory(ThirdParty)
 add_subdirectory(Engine/Source)
+
+# ---- Global path ----
+set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/ThirdParty" CACHE PATH "第三方库根目录")
+set(CMAKE_DIR "${CMAKE_SOURCE_DIR}/CMake" CACHE PATH ".cmake目录")
+
+

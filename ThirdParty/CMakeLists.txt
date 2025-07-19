@@ -57,3 +57,60 @@ if(DEFINED ENV{VULKAN_SDK})
 else()
     message(FATAL_ERROR "VULKAN_SDK environment variable not set!")
 endif()
+
+if(NOT TARGET SPIRV-Cross)
+    # 只启用反射功能，关闭其他所有选项
+    set(SPIRV_CROSS_ENABLE_GLSL ON CACHE BOOL "" FORCE)  # 强制覆盖
+    set(SPIRV_CROSS_ENABLE_REFLECT ON CACHE BOOL "" FORCE)
+    option(SPIRV_CROSS_ENABLE_HLSL "Enable HLSL target support." OFF)
+    option(SPIRV_CROSS_ENABLE_MSL "Enable MSL target support." OFF)
+    option(SPIRV_CROSS_ENABLE_CPP "Enable C++ target support." ON)
+    option(SPIRV_CROSS_ENABLE_C_API "Enable C API wrapper support in static library." OFF)
+    option(SPIRV_CROSS_ENABLE_UTIL "Enable util module support." OFF)
+
+# 确保静态库模式（因为反射可能需要它）
+    option(SPIRV_CROSS_STATIC "Build the C and C++ API as static libraries." ON)
+    option(SPIRV_CROSS_SHARED "Build the C API as a single shared library." OFF)
+    option(SPIRV_CROSS_CLI "Build the CLI binary. Requires SPIRV_CROSS_STATIC." OFF)
+
+# 其他选项默认关闭
+    option(SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS "Instead of throwing exceptions assert" OFF)
+    option(SPIRV_CROSS_ENABLE_TESTS "Enable SPIRV-Cross tests." OFF)
+    option(SPIRV_CROSS_SANITIZE_ADDRESS "Sanitize address" OFF)
+    option(SPIRV_CROSS_SANITIZE_MEMORY "Sanitize memory" OFF)
+    option(SPIRV_CROSS_SANITIZE_THREADS "Sanitize threads" OFF)
+    option(SPIRV_CROSS_SANITIZE_UNDEFINED "Sanitize undefined" OFF)
+    option(SPIRV_CROSS_FORCE_STL_TYPES "Force use of STL types." OFF)
+    option(SPIRV_CROSS_SKIP_INSTALL "Skips installation targets." OFF)
+    option(SPIRV_CROSS_WERROR "Fail build on warnings." OFF)
+    option(SPIRV_CROSS_MISC_WARNINGS "Misc warnings useful for Travis runs." OFF)
+    option(SPIRV_CROSS_FORCE_PIC "Force position-independent code for all targets." OFF)
+
+# 添加 SPIRV-Cross 子目录
+    add_subdirectory(SPIRV-Cross)
+    #set_target_properties(SPIRV-Cross PROPERTIES FOLDER ${third_party_folder}/SPIRV-Cross)
+endif()
+
+if(NOT TARGET spdlog)
+    option(SPDLOG_BUILD_EXAMPLE "Build SPDLOG examples" OFF)
+    option(SPDLOG_INSTALL "Install SPDLOG" OFF)
+    add_subdirectory(spdlog)
+    set_target_properties(spdlog PROPERTIES FOLDER ${third_party_folder}/spdlog)
+endif()
+# # 自动递归搜索所有头文件
+# file(GLOB_RECURSE HEADER_FILES 
+#     "${CMAKE_CURRENT_SOURCE_DIR}/nlohmann-json/*.h"
+#     "${CMAKE_CURRENT_SOURCE_DIR}/nlohmann-json/*.hpp"
+# )
+
+# set(PROJECT_NAME nlohmann-json)
+
+# # 创建INTERFACE库
+# add_library(${PROJECT_NAME} INTERFACE)
+
+# # 添加头文件
+# target_sources(${PROJECT_NAME} INTERFACE
+#     ${HEADER_FILES}
+# )
+
+# set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "nlohmann-json")

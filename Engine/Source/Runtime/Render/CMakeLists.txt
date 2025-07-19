@@ -15,7 +15,7 @@ file(GLOB_RECURSE LIB_HEADERS
 )
 #message(STATUS "LIB_HEADERS: ${LIB_HEADERS}")
 
-add_executable(${TARGET_NAME} WIN32 ${LIB_SOURCES} ${LIB_HEADERS})
+add_library(${TARGET_NAME} STATIC ${LIB_SOURCES} ${LIB_HEADERS})
 
 target_include_directories(${TARGET_NAME} PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/Include
@@ -27,7 +27,8 @@ target_include_directories(${TARGET_NAME} PUBLIC
     ${THIRD_PARTY_DIR}/ktx/include
     ${THIRD_PARTY_DIR}/tinygltf
     ${THIRD_PARTY_DIR}/imgui
-
+    ${THIRD_PARTY_DIR}/fmt/include
+    ${THIRD_PARTY_DIR}/SPIRV-Cross
 )
 
 if(DEFINED ENV{VULKAN_SDK})

@@ -1,21 +1,15 @@
 #include "VulkanSwapChain.h"
-#include <Windows.h>
-#include <Vulkan/vulkan_win32.h>
-
 #include "VulkanTools.h"
 
-
-void VulkanSwapChain::initSurface(void* platformHandle, void* platformWindow)
+void VulkanSwapChain::initSurface(GLFWwindow *window)
 {
 	VkResult err = VK_SUCCESS;
-	
-	VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
-	surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-	surfaceCreateInfo.hinstance = (HINSTANCE)platformHandle;
-	surfaceCreateInfo.hwnd = (HWND)platformWindow;
-	err = vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
-	
-	if (err != VK_SUCCESS) {
+
+	// 使用GLFW创建表面
+	err = glfwCreateWindowSurface(instance, window, nullptr, &surface);
+
+	if (err != VK_SUCCESS)
+	{
 		vks::tools::exitFatal("Could not create surface!", err);
 	}
 
@@ -31,7 +25,7 @@ void VulkanSwapChain::initSurface(void* platformHandle, void* platformWindow)
 	// Find a queue with present support
 	// Will be used to present the swap chain images to the windowing system
 	std::vector<VkBool32> supportsPresent(queueCount);
-	for (uint32_t i = 0; i < queueCount; i++) 
+	for (uint32_t i = 0; i < queueCount; i++)
 	{
 		vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &supportsPresent[i]);
 	}
@@ -40,16 +34,16 @@ void VulkanSwapChain::initSurface(void* platformHandle, void* platformWindow)
 	// families, try to find one that supports both
 	uint32_t graphicsQueueNodeIndex = UINT32_MAX;
 	uint32_t presentQueueNodeIndex = UINT32_MAX;
-	for (uint32_t i = 0; i < queueCount; i++) 
+	for (uint32_t i = 0; i < queueCount; i++)
 	{
-		if ((queueProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) 
+		if ((queueProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
 		{
-			if (graphicsQueueNodeIndex == UINT32_MAX) 
+			if (graphicsQueueNodeIndex == UINT32_MAX)
 			{
 				graphicsQueueNodeIndex = i;
 			}
 
-			if (supportsPresent[i] == VK_TRUE) 
+			if (supportsPresent[i] == VK_TRUE)
 			{
 				graphicsQueueNodeIndex = i;
 				presentQueueNodeIndex = i;
@@ -57,13 +51,13 @@ void VulkanSwapChain::initSurface(void* platformHandle, void* platformWindow)
 			}
 		}
 	}
-	if (presentQueueNodeIndex == UINT32_MAX) 
-	{	
+	if (presentQueueNodeIndex == UINT32_MAX)
+	{
 		// If there's no queue that supports both present and graphics
 		// try to find a separate present queue
-		for (uint32_t i = 0; i < queueCount; ++i) 
+		for (uint32_t i = 0; i < queueCount; ++i)
 		{
-			if (supportsPresent[i] == VK_TRUE) 
+			if (supportsPresent[i] == VK_TRUE)
 			{
 				presentQueueNodeIndex = i;
 				break;
@@ -72,12 +66,12 @@ void VulkanSwapChain::initSurface(void* platformHandle, void* platformWindow)
 	}
 
 	// Exit if either a graphics or a presenting queue hasn't been found
-	if (graphicsQueueNodeIndex == UINT32_MAX || presentQueueNodeIndex == UINT32_MAX) 
+	if (graphicsQueueNodeIndex == UINT32_MAX || presentQueueNodeIndex == UINT32_MAX)
 	{
 		vks::tools::exitFatal("Could not find a graphics and/or presenting queue!", -1);
 	}
 
-	if (graphicsQueueNodeIndex != presentQueueNodeIndex) 
+	if (graphicsQueueNodeIndex != presentQueueNodeIndex)
 	{
 		vks::tools::exitFatal("Separate graphics and presenting queues are not supported yet!", -1);
 	}
@@ -95,14 +89,15 @@ void VulkanSwapChain::initSurface(void* platformHandle, void* platformWindow)
 	// We want to get a format that best suits our needs, so we try to get one from a set of preferred formats
 	// Initialize the format to the first one returned by the implementation in case we can't find one of the preffered formats
 	VkSurfaceFormatKHR selectedFormat = surfaceFormats[0];
-	std::vector<VkFormat> preferredImageFormats = { 
+	std::vector<VkFormat> preferredImageFormats = {
 		VK_FORMAT_B8G8R8A8_UNORM,
-		VK_FORMAT_R8G8B8A8_UNORM, 
-		VK_FORMAT_A8B8G8R8_UNORM_PACK32 
-	};
+		VK_FORMAT_R8G8B8A8_UNORM,
+		VK_FORMAT_A8B8G8R8_UNORM_PACK32};
 
-	for (auto& availableFormat : surfaceFormats) {
-		if (std::find(preferredImageFormats.begin(), preferredImageFormats.end(), availableFormat.format) != preferredImageFormats.end()) {
+	for (auto &availableFormat : surfaceFormats)
+	{
+		if (std::find(preferredImageFormats.begin(), preferredImageFormats.end(), availableFormat.format) != preferredImageFormats.end())
+		{
 			selectedFormat = availableFormat;
 			break;
 		}
@@ -119,7 +114,7 @@ void VulkanSwapChain::setContext(VkInstance instance, VkPhysicalDevice physicalD
 	this->device = device;
 }
 
-void VulkanSwapChain::create(uint32_t& width, uint32_t& height, bool vsync, bool fullscreen)
+void VulkanSwapChain::create(uint32_t &width, uint32_t &height, bool vsync, bool fullscreen)
 {
 	assert(physicalDevice);
 	assert(device);
@@ -147,7 +142,6 @@ void VulkanSwapChain::create(uint32_t& width, uint32_t& height, bool vsync, bool
 		width = surfCaps.currentExtent.width;
 		height = surfCaps.currentExtent.height;
 	}
-
 
 	// Select a present mode for the swapchain
 	uint32_t presentModeCount;
@@ -207,8 +201,10 @@ void VulkanSwapChain::create(uint32_t& width, uint32_t& height, bool vsync, bool
 		VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
 		VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
 	};
-	for (auto& compositeAlphaFlag : compositeAlphaFlags) {
-		if (surfCaps.supportedCompositeAlpha & compositeAlphaFlag) {
+	for (auto &compositeAlphaFlag : compositeAlphaFlags)
+	{
+		if (surfCaps.supportedCompositeAlpha & compositeAlphaFlag)
+		{
 			compositeAlpha = compositeAlphaFlag;
 			break;
 		}
@@ -220,7 +216,7 @@ void VulkanSwapChain::create(uint32_t& width, uint32_t& height, bool vsync, bool
 	swapchainCI.minImageCount = desiredNumberOfSwapchainImages;
 	swapchainCI.imageFormat = colorFormat;
 	swapchainCI.imageColorSpace = colorSpace;
-	swapchainCI.imageExtent = { swapchainExtent.width, swapchainExtent.height };
+	swapchainCI.imageExtent = {swapchainExtent.width, swapchainExtent.height};
 	swapchainCI.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	swapchainCI.preTransform = (VkSurfaceTransformFlagBitsKHR)preTransform;
 	swapchainCI.imageArrayLayers = 1;
@@ -234,25 +230,29 @@ void VulkanSwapChain::create(uint32_t& width, uint32_t& height, bool vsync, bool
 	swapchainCI.compositeAlpha = compositeAlpha;
 
 	// Enable transfer source on swap chain images if supported
-	if (surfCaps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) {
+	if (surfCaps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
+	{
 		swapchainCI.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 	}
 
 	// Enable transfer destination on swap chain images if supported
-	if (surfCaps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT) {
+	if (surfCaps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT)
+	{
 		swapchainCI.imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	}
 
 	VK_CHECK_RESULT(vkCreateSwapchainKHR(device, &swapchainCI, nullptr, &swapChain))
 
 	// If an existing swap chain is re-created, destroy the old swap chain and the ressources owned by the application (image views, images are owned by the swap chain)
-	if (oldSwapchain != VK_NULL_HANDLE) { 
-		for (auto i = 0; i < images.size(); i++) {
+	if (oldSwapchain != VK_NULL_HANDLE)
+	{
+		for (auto i = 0; i < images.size(); i++)
+		{
 			vkDestroyImageView(device, imageViews[i], nullptr);
 		}
 		vkDestroySwapchainKHR(device, oldSwapchain, nullptr);
 	}
-	uint32_t imageCount{ 0 };
+	uint32_t imageCount{0};
 	VK_CHECK_RESULT(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr))
 
 	// Get the swap chain images
@@ -271,8 +271,7 @@ void VulkanSwapChain::create(uint32_t& width, uint32_t& height, bool vsync, bool
 			VK_COMPONENT_SWIZZLE_R,
 			VK_COMPONENT_SWIZZLE_G,
 			VK_COMPONENT_SWIZZLE_B,
-			VK_COMPONENT_SWIZZLE_A
-		};
+			VK_COMPONENT_SWIZZLE_A};
 		colorAttachmentView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		colorAttachmentView.subresourceRange.baseMipLevel = 0;
 		colorAttachmentView.subresourceRange.levelCount = 1;
@@ -285,11 +284,11 @@ void VulkanSwapChain::create(uint32_t& width, uint32_t& height, bool vsync, bool
 	}
 }
 
-VkResult VulkanSwapChain::acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t& imageIndex)
+VkResult VulkanSwapChain::acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t &imageIndex)
 {
 	// By setting timeout to UINT64_MAX we will always wait until the next image has been acquired or an actual error is thrown
 	// With that we don't have to handle VK_NOT_READY
-	return vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, &imageIndex);
+	return vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence) nullptr, &imageIndex);
 }
 
 VkResult VulkanSwapChain::queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore)
@@ -309,16 +308,18 @@ VkResult VulkanSwapChain::queuePresent(VkQueue queue, uint32_t imageIndex, VkSem
 	return vkQueuePresentKHR(queue, &presentInfo);
 }
 
-
 void VulkanSwapChain::cleanup()
 {
-	if (swapChain != VK_NULL_HANDLE) {
-		for (auto i = 0; i < images.size(); i++) {
+	if (swapChain != VK_NULL_HANDLE)
+	{
+		for (auto i = 0; i < images.size(); i++)
+		{
 			vkDestroyImageView(device, imageViews[i], nullptr);
 		}
 		vkDestroySwapchainKHR(device, swapChain, nullptr);
 	}
-	if (surface != VK_NULL_HANDLE) {
+	if (surface != VK_NULL_HANDLE)
+	{
 		vkDestroySurfaceKHR(instance, surface, nullptr);
 	}
 	surface = VK_NULL_HANDLE;
@@ -327,29 +328,29 @@ void VulkanSwapChain::cleanup()
 
 #if defined(_DIRECT2DISPLAY)
 /**
-* Create direct to display surface
-*/	
+ * Create direct to display surface
+ */
 void VulkanSwapChain::createDirect2DisplaySurface(uint32_t width, uint32_t height)
 {
 	uint32_t displayPropertyCount;
-		
+
 	// Get display property
 	vkGetPhysicalDeviceDisplayPropertiesKHR(physicalDevice, &displayPropertyCount, NULL);
-	VkDisplayPropertiesKHR* pDisplayProperties = new VkDisplayPropertiesKHR[displayPropertyCount];
+	VkDisplayPropertiesKHR *pDisplayProperties = new VkDisplayPropertiesKHR[displayPropertyCount];
 	vkGetPhysicalDeviceDisplayPropertiesKHR(physicalDevice, &displayPropertyCount, pDisplayProperties);
 
 	// Get plane property
 	uint32_t planePropertyCount;
 	vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physicalDevice, &planePropertyCount, NULL);
-	VkDisplayPlanePropertiesKHR* pPlaneProperties = new VkDisplayPlanePropertiesKHR[planePropertyCount];
+	VkDisplayPlanePropertiesKHR *pPlaneProperties = new VkDisplayPlanePropertiesKHR[planePropertyCount];
 	vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physicalDevice, &planePropertyCount, pPlaneProperties);
 
 	VkDisplayKHR display = VK_NULL_HANDLE;
 	VkDisplayModeKHR displayMode;
-	VkDisplayModePropertiesKHR* pModeProperties;
+	VkDisplayModePropertiesKHR *pModeProperties;
 	bool foundMode = false;
 
-	for(uint32_t i = 0; i < displayPropertyCount;++i)
+	for (uint32_t i = 0; i < displayPropertyCount; ++i)
 	{
 		display = pDisplayProperties[i].display;
 		uint32_t modeCount;
@@ -359,7 +360,7 @@ void VulkanSwapChain::createDirect2DisplaySurface(uint32_t width, uint32_t heigh
 
 		for (uint32_t j = 0; j < modeCount; ++j)
 		{
-			const VkDisplayModePropertiesKHR* mode = &pModeProperties[j];
+			const VkDisplayModePropertiesKHR *mode = &pModeProperties[j];
 
 			if (mode->parameters.visibleRegion.width == width && mode->parameters.visibleRegion.height == height)
 			{
@@ -372,10 +373,10 @@ void VulkanSwapChain::createDirect2DisplaySurface(uint32_t width, uint32_t heigh
 		{
 			break;
 		}
-		delete [] pModeProperties;
+		delete[] pModeProperties;
 	}
 
-	if(!foundMode)
+	if (!foundMode)
 	{
 		vks::tools::exitFatal("Can't find a display and a display mode!", -1);
 		return;
@@ -383,36 +384,36 @@ void VulkanSwapChain::createDirect2DisplaySurface(uint32_t width, uint32_t heigh
 
 	// Search for a best plane we can use
 	uint32_t bestPlaneIndex = UINT32_MAX;
-	VkDisplayKHR* pDisplays = NULL;
-	for(uint32_t i = 0; i < planePropertyCount; i++)
+	VkDisplayKHR *pDisplays = NULL;
+	for (uint32_t i = 0; i < planePropertyCount; i++)
 	{
-		uint32_t planeIndex=i;
+		uint32_t planeIndex = i;
 		uint32_t displayCount;
 		vkGetDisplayPlaneSupportedDisplaysKHR(physicalDevice, planeIndex, &displayCount, NULL);
 		if (pDisplays)
 		{
-			delete [] pDisplays;
+			delete[] pDisplays;
 		}
 		pDisplays = new VkDisplayKHR[displayCount];
 		vkGetDisplayPlaneSupportedDisplaysKHR(physicalDevice, planeIndex, &displayCount, pDisplays);
 
 		// Find a display that matches the current plane
 		bestPlaneIndex = UINT32_MAX;
-		for(uint32_t j = 0; j < displayCount; j++)
+		for (uint32_t j = 0; j < displayCount; j++)
 		{
-			if(display == pDisplays[j])
+			if (display == pDisplays[j])
 			{
 				bestPlaneIndex = i;
 				break;
 			}
 		}
-		if(bestPlaneIndex != UINT32_MAX)
+		if (bestPlaneIndex != UINT32_MAX)
 		{
 			break;
 		}
 	}
 
-	if(bestPlaneIndex == UINT32_MAX)
+	if (bestPlaneIndex == UINT32_MAX)
 	{
 		vks::tools::exitFatal("Can't find a plane for displaying!", -1);
 		return;
@@ -453,7 +454,8 @@ void VulkanSwapChain::createDirect2DisplaySurface(uint32_t width, uint32_t heigh
 	surfaceInfo.imageExtent.height = height;
 
 	VkResult result = vkCreateDisplayPlaneSurfaceKHR(instance, &surfaceInfo, NULL, &surface);
-	if (result !=VK_SUCCESS) {
+	if (result != VK_SUCCESS)
+	{
 		vks::tools::exitFatal("Failed to create surface!", result);
 	}
 
@@ -462,4 +464,4 @@ void VulkanSwapChain::createDirect2DisplaySurface(uint32_t width, uint32_t heigh
 	delete[] pDisplayProperties;
 	delete[] pPlaneProperties;
 }
-#endif 
+#endif

@@ -15,7 +15,10 @@ file(GLOB_RECURSE LIB_HEADERS
 )
 #message(STATUS "LIB_HEADERS: ${LIB_HEADERS}")
 
-add_executable(${TARGET_NAME} WIN32 ${LIB_SOURCES} ${LIB_HEADERS})
+add_library(${TARGET_NAME} STATIC ${LIB_SOURCES} ${LIB_HEADERS})
+
+#Enable experimental glm
+target_compile_definitions(${TARGET_NAME} PRIVATE GLM_ENABLE_EXPERIMENTAL)
 
 target_include_directories(${TARGET_NAME} PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/Include
@@ -27,7 +30,8 @@ target_include_directories(${TARGET_NAME} PUBLIC
     ${THIRD_PARTY_DIR}/ktx/include
     ${THIRD_PARTY_DIR}/tinygltf
     ${THIRD_PARTY_DIR}/imgui
-
+    ${THIRD_PARTY_DIR}/fmt/include
+    ${THIRD_PARTY_DIR}/SPIRV-Cross
 )
 
 if(DEFINED ENV{VULKAN_SDK})
@@ -41,13 +45,11 @@ target_include_directories(${TARGET_NAME} PUBLIC
     ${THIRD_PARTY_DIR}/glm
 )
 
-target_link_libraries(${TARGET_NAME} PUBLIC PhysicsEngine)
-target_link_libraries(${TARGET_NAME} PUBLIC glfw)
+target_link_libraries(${TARGET_NAME} PUBLIC PhysicsEngine vulkan_sdk RuntimeCore)
 target_link_libraries(${TARGET_NAME} PUBLIC glm)
 target_link_libraries(${TARGET_NAME} PUBLIC imgui)
 target_link_libraries(${TARGET_NAME} PUBLIC ktx)
-target_link_libraries(${TARGET_NAME} PUBLIC vulkan_sdk)
-target_link_libraries(${TARGET_NAME} PUBLIC CyRCore)
+
 
 # Organize the folder structure for the IDE
 set_property(TARGET ${TARGET_NAME} PROPERTY VS_GLOBAL_DisableExternalDependencies true)
@@ -55,3 +57,5 @@ set_property(TARGET ${TARGET_NAME} PROPERTY VS_GLOBAL_DisableExternalDependencie
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "Runtime")
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/Source PREFIX "Source" FILES ${LIB_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/Include PREFIX "Include" FILES ${LIB_HEADERS})
+
+set_property(GLOBAL PROPERTY DEFAULT_PROJECT ${TARGET_NAME})

@@ -17,7 +17,7 @@ class Engine
 {
     static const float FPSAlpha;
     friend class Editor;
-    
+
 public:
     void StartEngine(const std::string &ConfigFilePath);
     void ShutdownEngine();
@@ -25,7 +25,7 @@ public:
     void Initialize();
     void Clear();
 
-    bool IsQuit() const { return IsQuit; }
+    bool IsQuit() const { return isQuit; }
     void Run();
     bool TickOneFrame(float DeltaTime);
 
@@ -39,13 +39,14 @@ protected:
 
     void CalculateFPS(float DeltaTime);
     float CalculateDeltaTime();
+    void LimitFPS(float &DeltaTime);
 
 protected:
-    std::atomic<bool> IsQuit{false};
-    int MaxFPS = 60;
+    bool isQuit = false;
+    int MaxFPS = 120;
 
     std::chrono::steady_clock::time_point LastTickTimePoint{std::chrono::steady_clock::now()};
-
+    std::chrono::steady_clock::time_point FrameStartTimePoint{std::chrono::steady_clock::now()};
     float AverageDuration = 0.f;
     int FrameCount = 0;
     int FPS = 0;

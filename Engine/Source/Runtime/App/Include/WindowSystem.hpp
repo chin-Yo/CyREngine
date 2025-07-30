@@ -6,6 +6,7 @@
 #include <array>
 #include <functional>
 #include <vector>
+#include <tuple>
 
 struct WindowCreateInfo
 {
@@ -25,7 +26,7 @@ public:
     bool shouldClose() const;
     void setTitle(const char *title);
     GLFWwindow *getWindow() const;
-    std::array<int, 2> getWindowSize() const;
+    std::tuple<uint32_t, uint32_t> getWindowSize() const;
 
     typedef std::function<void()> onResetFunc;
     typedef std::function<void(int, int, int, int)> onKeyFunc;
@@ -38,6 +39,7 @@ public:
     typedef std::function<void(int, const char **)> onDropFunc;
     typedef std::function<void(int, int)> onWindowSizeFunc;
     typedef std::function<void()> onWindowCloseFunc;
+    typedef std::function<void(bool)> onWindowIconifyFunc;
 
     void registerOnResetFunc(onResetFunc func) { m_onResetFunc.push_back(func); }
     void registerOnKeyFunc(onKeyFunc func) { m_onKeyFunc.push_back(func); }
@@ -50,6 +52,10 @@ public:
     void registerOnDropFunc(onDropFunc func) { m_onDropFunc.push_back(func); }
     void registerOnWindowSizeFunc(onWindowSizeFunc func) { m_onWindowSizeFunc.push_back(func); }
     void registerOnWindowCloseFunc(onWindowCloseFunc func) { m_onWindowCloseFunc.push_back(func); }
+    void registerOnWindowIconifyFunc(onWindowIconifyFunc func)
+    {
+        m_onWindowIconifyFunc.push_back(func);
+    }
 
     bool isMouseButtonDown(int button) const
     {
@@ -139,6 +145,15 @@ protected:
     }
     static void windowCloseCallback(GLFWwindow *window) { glfwSetWindowShouldClose(window, true); }
 
+    static void windowIconifyCallback(GLFWwindow* window, int iconified)
+    {
+        WindowSystem* app = (WindowSystem*)glfwGetWindowUserPointer(window);
+        if (app)
+        {
+            app->onWindowIconify(iconified);
+        }
+    }
+
     void onReset()
     {
         for (auto &func : m_onResetFunc)
@@ -190,6 +205,14 @@ protected:
             func(width, height);
     }
 
+    void onWindowIconify(int iconified)
+    {
+        for (auto& func : m_onWindowIconifyFunc)
+        {
+            func(iconified == GLFW_TRUE);
+        }
+    }
+
 private:
     GLFWwindow *m_window{nullptr};
     int m_width{0};
@@ -208,4 +231,5 @@ private:
     std::vector<onDropFunc> m_onDropFunc;
     std::vector<onWindowSizeFunc> m_onWindowSizeFunc;
     std::vector<onWindowCloseFunc> m_onWindowCloseFunc;
+    std::vector<onWindowIconifyFunc> m_onWindowIconifyFunc;
 };

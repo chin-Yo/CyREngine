@@ -28,11 +28,6 @@ void RenderContext::handleMouseMove(int32_t x, int32_t y)
 
     bool handled = false;
 
-    if (settings.overlay)
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        handled = io.WantCaptureMouse && ui.visible;
-    }
     mouseMoved((float)x, (float)y, handled);
 
     if (handled)
@@ -108,51 +103,7 @@ void RenderContext::nextFrame()
 
 void RenderContext::updateOverlay()
 {
-    if (!settings.overlay)
-        return;
-
-    // The overlay does not need to be updated with each frame, so we limit the update rate
-    // Not only does this save performance but it also makes display of fast changig values like fps more stable
-    ui.updateTimer -= frameTimer;
-    if (ui.updateTimer >= 0.0f)
-    {
-        return;
-    }
-    // Update at max. rate of 30 fps
-    ui.updateTimer = 1.0f / 30.0f;
-
-    ImGuiIO& io = ImGui::GetIO();
-
-    io.DisplaySize = ImVec2((float)width, (float)height);
-    io.DeltaTime = frameTimer;
-
-    io.MousePos = ImVec2(mouseState.position.x, mouseState.position.y);
-    io.MouseDown[0] = mouseState.buttons.left && ui.visible;
-    io.MouseDown[1] = mouseState.buttons.right && ui.visible;
-    io.MouseDown[2] = mouseState.buttons.middle && ui.visible;
-
-    ImGui::NewFrame();
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
-    ImGui::SetNextWindowPos(ImVec2(10 * ui.scale, 10 * ui.scale));
-    ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
-    ImGui::Begin("Vulkan Example", nullptr,
-                 ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-    ImGui::TextUnformatted(title.c_str());
-    ImGui::TextUnformatted(deviceProperties.deviceName);
-    ImGui::Text("%.2f ms/frame (%.1d fps)", (1000.0f / lastFPS), lastFPS);
-
-    ImGui::PushItemWidth(110.0f * ui.scale);
-    OnUpdateUIOverlay(&ui);
-    ImGui::PopItemWidth();
-    ImGui::End();
-    ImGui::PopStyleVar();
-    ImGui::Render();
-    if (ui.update() || ui.updated)
-    {
-        buildCommandBuffers();
-        ui.updated = false;
-    }
+    
 }
 
 void RenderContext::createPipelineCache()
@@ -184,7 +135,7 @@ void RenderContext::createSynchronizationPrimitives()
 
 void RenderContext::createSurface()
 {
-    swapChain.initSurface(windowInstance, window);
+    
 }
 
 void RenderContext::createSwapChain()
@@ -246,7 +197,7 @@ void RenderContext::windowResize()
     {
         if (settings.overlay)
         {
-            ui.resize(width, height);
+            
         }
     }
 
@@ -725,18 +676,7 @@ void RenderContext::prepare()
     setupRenderPass();
     createPipelineCache();
     setupFrameBuffer();
-    settings.overlay = settings.overlay && (!benchmark.active);
-    if (settings.overlay)
-    {
-        ui.device = vulkanDevice;
-        ui.queue = queue;
-        ui.shaders = {
-            loadShader("shaders/glsl/base/uioverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-            loadShader("shaders/glsl/base/uioverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT),
-        };
-        ui.prepareResources();
-        ui.preparePipeline(pipelineCache, renderPass, swapChain.colorFormat, depthFormat);
-    }
+    
 }
 
 void RenderContext::prepareFrame()
@@ -778,9 +718,7 @@ void RenderContext::submitFrame()
     VK_CHECK_RESULT(vkQueueWaitIdle(queue))
 }
 
-void RenderContext::OnUpdateUIOverlay(UIOverlay* overlay)
-{
-}
+
 
 HWND RenderContext::setupWindow(HINSTANCE hinstance, WNDPROC wndproc)
 {
@@ -917,8 +855,7 @@ void RenderContext::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
             paused = !paused;
             break;
         case KEY_F1:
-            ui.visible = !ui.visible;
-            ui.updated = true;
+           
             break;
         case KEY_F2:
             if (camera.type == Camera::CameraType::lookat)
@@ -1087,7 +1024,7 @@ RenderContext::~RenderContext()
 
     if (settings.overlay)
     {
-        ui.freeResources();
+        
     }
 
     delete vulkanDevice;

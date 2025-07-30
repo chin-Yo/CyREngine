@@ -15,22 +15,22 @@
  * limitations under the License.
  */
 
-#include "ktx_common.h"
+#include "Framework/Common/ktx_common.h"
 #include <stdexcept>
 
 namespace vkb
 {
-namespace ktx
-{
-ktxTexture *load_texture(std::string const &filename)
-{
-	ktxTexture    *ktx_texture;
-	KTX_error_code result = ktxTexture_CreateFromNamedFile(filename.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktx_texture);
-	if ((result != KTX_SUCCESS) || (ktx_texture == nullptr))
+	namespace ktx
 	{
-		throw std::runtime_error("Couldn't load texture");
-	}
-	return ktx_texture;
-}
-}        // namespace ktx
-}        // namespace vkb
+		ktxTexture *load_texture(std::string const &filename)
+		{
+			ktxTexture *ktx_texture;
+			KTX_error_code result = ktxTexture_CreateFromNamedFile(filename.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktx_texture);
+			if ((result != KTX_SUCCESS) || (ktx_texture == nullptr))
+			{
+				throw std::runtime_error("Couldn't load texture");
+			}
+			return ktx_texture;
+		}
+	} // namespace ktx
+} // namespace vkb

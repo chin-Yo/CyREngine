@@ -1,7 +1,6 @@
 #include "App/Include/Editor.hpp"
 #include <assert.h>
 #include "App/Include/Engine.hpp"
-#include "Engine.hpp"
 
 Editor::Editor()
 {
@@ -29,16 +28,9 @@ void Editor::Run()
     while (true)
     {
         delta_time = RuntimeEngine->CalculateDeltaTime();
+        RuntimeEngine->LimitFPS(delta_time);
 
         if (!RuntimeEngine->TickOneFrame(delta_time))
             return;
     }
-}
-
-bool Engine::TickOneFrame(float DeltaTime)
-{
-    LogicalTick(DeltaTime);
-
-    RendererTick(DeltaTime);
-    return false;
 }

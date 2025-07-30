@@ -7,8 +7,6 @@
 #include "benchmark.hpp"
 #include "Camera.hpp"
 #include "VulkanSwapChain.h"
-#include "VulkanUIOverlay.h"
-
 
 struct VulkanDevice;
 
@@ -30,21 +28,24 @@ private:
     void createCommandBuffers();
     void destroyCommandBuffers();
     std::string shaderDir = "glsl";
-public:
 
+public:
     /** @brief State of mouse/touch input */
-    struct {
-        struct {
+    struct
+    {
+        struct
+        {
             bool left = false;
             bool right = false;
             bool middle = false;
         } buttons;
         glm::vec2 position;
     } mouseState;
-    
-    static std::vector<const char*> Args;
+
+    static std::vector<const char *> Args;
     /** @brief Example settings that can be changed e.g. by command line arguments */
-    struct Settings {
+    struct Settings
+    {
         /** @brief Activates validation layers (and message output) when set to true */
         bool validation = false;
         /** @brief Set to true if fullscreen mode has been requested via command line */
@@ -60,7 +61,7 @@ public:
     uint32_t apiVersion = VK_API_VERSION_1_0;
     uint32_t width = 1280;
     uint32_t height = 720;
-    UIOverlay ui;
+    // UIOverlay ui;
     vks::Benchmark benchmark;
     // Defines a frame rate independent timer value clamped from -1.0...1.0
     // For use in animations, rotations, etc.
@@ -78,12 +79,13 @@ public:
     VulkanDevice *vulkanDevice{};
 
     /** @brief Default depth stencil attachment used by the default render pass */
-    struct {
+    struct
+    {
         VkImage image;
         VkDeviceMemory memory;
         VkImageView view;
     } depthStencil{};
-    
+
     virtual void OnHandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     /** @brief (Virtual) Called after a key was pressed, can be used to do custom key handling */
     virtual void keyPressed(uint32_t);
@@ -118,32 +120,32 @@ public:
     /** @brief Presents the current image to the swap chain */
     void submitFrame();
     /** @brief (Virtual) Called when the UI overlay is updating, can be used to add custom elements to the overlay */
-    virtual void OnUpdateUIOverlay(UIOverlay *overlay);
+    // virtual void OnUpdateUIOverlay(UIOverlay *overlay);
     /** @brief (Virtual) Called after the mouse cursor moved and before internal events (like camera rotation) is handled */
     virtual void mouseMoved(double x, double y, bool &handled);
     /** The Settings window has done what GLFW should do */
     HWND setupWindow(HINSTANCE hinstance, WNDPROC wndproc);
     void handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 protected:
     // Returns the path to the root of the glsl, hlsl or slang shader directory.
     std::string getShadersPath() const;
     HWND window;
     HINSTANCE windowInstance;
     std::chrono::time_point<std::chrono::high_resolution_clock> lastTimestamp, tPrevEnd;
-    
+
     /** @brief Set of instance extensions to be enabled for this example (must be set in the derived constructor) */
-    std::vector<const char*> enabledInstanceExtensions;
+    std::vector<const char *> enabledInstanceExtensions;
     std::vector<std::string> supportedInstanceExtensions;
     /** @brief Set of layer settings to be enabled for this example (must be set in the derived constructor) */
     std::vector<VkLayerSettingEXT> enabledLayerSettings;
 
-
     // Frame counter to display fps
     uint32_t frameCounter = 0;
     // Vulkan instance, stores all per-application states
-    VkInstance instance{ VK_NULL_HANDLE };
+    VkInstance instance{VK_NULL_HANDLE};
     // Physical device (GPU) that Vulkan will use
-    VkPhysicalDevice physicalDevice{ VK_NULL_HANDLE };
+    VkPhysicalDevice physicalDevice{VK_NULL_HANDLE};
     // Stores physical device properties (for e.g. checking device limits)
     VkPhysicalDeviceProperties deviceProperties{};
     // Stores the features available on the selected physical device (for e.g. checking if a feature is available)
@@ -153,16 +155,16 @@ protected:
     /** @brief Set of physical device features to be enabled for this example (must be set in the derived constructor) */
     VkPhysicalDeviceFeatures enabledFeatures{};
     /** @brief Set of device extensions to be enabled for this example (must be set in the derived constructor) */
-    std::vector<const char*> enabledDeviceExtensions;
+    std::vector<const char *> enabledDeviceExtensions;
     /** @brief Optional pNext structure for passing extension structures to device creation */
-    void* deviceCreatepNextChain = nullptr;
+    void *deviceCreatepNextChain = nullptr;
     /** @brief Logical device, application's view of the physical device (GPU) */
-    VkDevice device{ VK_NULL_HANDLE };
-    VkQueue queue{ VK_NULL_HANDLE };
+    VkDevice device{VK_NULL_HANDLE};
+    VkQueue queue{VK_NULL_HANDLE};
     // Depth buffer format (selected during Vulkan initialization)
     VkFormat depthFormat{VK_FORMAT_UNDEFINED};
     // Command buffer pool
-    VkCommandPool cmdPool{ VK_NULL_HANDLE };
+    VkCommandPool cmdPool{VK_NULL_HANDLE};
     // Wraps the swap chain to present images (framebuffers) to the windowing system
     VulkanSwapChain swapChain;
     /** @brief Pipeline stages used to wait at for graphics queue submissions */
@@ -172,8 +174,9 @@ protected:
     // Command buffers used for rendering
     std::vector<VkCommandBuffer> drawCmdBuffers;
     // Global render pass for frame buffer writes
-    VkRenderPass renderPass{ VK_NULL_HANDLE };
-    struct {
+    VkRenderPass renderPass{VK_NULL_HANDLE};
+    struct
+    {
         // Swap chain image presentation
         VkSemaphore presentComplete;
         // Command buffer submission and execution
@@ -183,22 +186,21 @@ protected:
     // List of shader modules created (stored for cleanup)
     std::vector<VkShaderModule> shaderModules;
     // Pipeline cache object
-    VkPipelineCache pipelineCache{ VK_NULL_HANDLE };
+    VkPipelineCache pipelineCache{VK_NULL_HANDLE};
     // List of available frame buffers (same as number of swap chain images)
-    std::vector<VkFramebuffer>frameBuffers;
+    std::vector<VkFramebuffer> frameBuffers;
 
     // Descriptor set pool
-    VkDescriptorPool descriptorPool{ VK_NULL_HANDLE };
-
+    VkDescriptorPool descriptorPool{VK_NULL_HANDLE};
 
     // Active frame buffer index
     uint32_t currentBuffer = 0;
-    
+
     RenderContext();
     virtual ~RenderContext();
-    bool requiresStencil{ false };
+    bool requiresStencil{false};
 };
 
-inline void RenderContext::mouseMoved(double x, double y, bool& handled)
+inline void RenderContext::mouseMoved(double x, double y, bool &handled)
 {
 }

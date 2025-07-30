@@ -17,6 +17,9 @@ file(GLOB_RECURSE LIB_HEADERS
 
 add_library(${TARGET_NAME} STATIC ${LIB_SOURCES} ${LIB_HEADERS})
 
+#Enable experimental glm
+target_compile_definitions(${TARGET_NAME} PRIVATE GLM_ENABLE_EXPERIMENTAL)
+
 target_include_directories(${TARGET_NAME} PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/Include
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Core
@@ -42,13 +45,11 @@ target_include_directories(${TARGET_NAME} PUBLIC
     ${THIRD_PARTY_DIR}/glm
 )
 
-target_link_libraries(${TARGET_NAME} PUBLIC PhysicsEngine)
-target_link_libraries(${TARGET_NAME} PUBLIC glfw)
+target_link_libraries(${TARGET_NAME} PUBLIC PhysicsEngine vulkan_sdk RuntimeCore)
 target_link_libraries(${TARGET_NAME} PUBLIC glm)
 target_link_libraries(${TARGET_NAME} PUBLIC imgui)
 target_link_libraries(${TARGET_NAME} PUBLIC ktx)
-target_link_libraries(${TARGET_NAME} PUBLIC vulkan_sdk)
-target_link_libraries(${TARGET_NAME} PUBLIC CyRCore)
+
 
 # Organize the folder structure for the IDE
 set_property(TARGET ${TARGET_NAME} PROPERTY VS_GLOBAL_DisableExternalDependencies true)

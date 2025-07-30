@@ -1,7 +1,9 @@
-set(TARGET_NAME CyRCore)
+set(TARGET_NAME RuntimeCore)
 
 Include(${CMAKE_DIR}/LibBase.cmake)
 
+
+target_link_libraries(${TARGET_NAME} PUBLIC spdlog::spdlog)
 
 set_property(TARGET ${TARGET_NAME} PROPERTY VS_GLOBAL_DisableExternalDependencies true)
 

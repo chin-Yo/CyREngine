@@ -6,6 +6,10 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+if(MSVC)
+    add_compile_options(/utf-8)
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(BUILD_SHARED_LIBS OFF)
@@ -25,6 +29,13 @@ set(CYRENGINE_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_INSTALL_PREFIX "${CYRENGINE_ROOT_DIR}/bin")
 set(BINARY_ROOT_DIR "${CMAKE_INSTALL_PREFIX}/")
 
+# ---- Global path ----
+set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/ThirdParty" CACHE PATH "第三方库根目录")
+set(CMAKE_DIR "${CMAKE_SOURCE_DIR}/CMake" CACHE PATH ".cmake目录")
+
+# 打印Global path
+message(STATUS "THIRD_PARTY_DIR: ${THIRD_PARTY_DIR}")
+message(STATUS "CMAKE_DIR: ${CMAKE_DIR}")
 
 # 设置全局构建输出目录
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
@@ -52,9 +63,3 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # ---- Subdirectories ----
 add_subdirectory(ThirdParty)
 add_subdirectory(Engine/Source)
-
-# ---- Global path ----
-set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/ThirdParty" CACHE PATH "第三方库根目录")
-set(CMAKE_DIR "${CMAKE_SOURCE_DIR}/CMake" CACHE PATH ".cmake目录")
-
-

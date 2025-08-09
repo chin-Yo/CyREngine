@@ -36,7 +36,7 @@
 #define VK_NO_PROTOTYPES
 #endif
 
-#include <vulkan/vulkan.h>
+#include <volk.h>
 #include "ktx.h"
 
 #if defined(KTX_USE_FUNCPTRS_FOR_VULKAN)
@@ -44,7 +44,7 @@
 #if defined(_WIN32)
 extern HMODULE ktxVulkanLibary;
 #else
-extern void* ktxVulkanLibrary;
+extern void *ktxVulkanLibrary;
 #endif
 
 extern ktx_bool_t ktxVulkanLoadLibrary(void);
@@ -94,4 +94,3 @@ extern ktx_bool_t ktxVulkanLoadLibrary(void);
 #endif /* KTX_USE_FUNCPTRS_FOR_VULKAN */
 
 #endif /* _VK_FUNCS_H_ */
-

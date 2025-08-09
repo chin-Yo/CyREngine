@@ -30,7 +30,6 @@ target_include_directories(${TARGET_NAME} PUBLIC
     ${THIRD_PARTY_DIR}/ktx/include
     ${THIRD_PARTY_DIR}/tinygltf
     ${THIRD_PARTY_DIR}/imgui
-    ${THIRD_PARTY_DIR}/fmt/include
     ${THIRD_PARTY_DIR}/SPIRV-Cross
 )
 
@@ -45,8 +44,8 @@ target_include_directories(${TARGET_NAME} PUBLIC
     ${THIRD_PARTY_DIR}/glm
 )
 
-target_link_libraries(${TARGET_NAME} PUBLIC PhysicsEngine vulkan_sdk RuntimeCore)
-target_link_libraries(${TARGET_NAME} PUBLIC glm)
+target_link_libraries(${TARGET_NAME} PUBLIC PhysicsEngine volk RuntimeCore spdlog::spdlog)
+target_link_libraries(${TARGET_NAME} PUBLIC glm spirv-cross-glsl spirv-cross-reflect) 
 target_link_libraries(${TARGET_NAME} PUBLIC imgui)
 target_link_libraries(${TARGET_NAME} PUBLIC ktx)
 

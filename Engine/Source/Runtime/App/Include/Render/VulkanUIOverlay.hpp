@@ -5,9 +5,8 @@
 #include <string.h>
 #include <vector>
 #include <iomanip>
-#include <vulkan/vulkan.h>
-#include "VulkanDebug.h"
-#include "VulkanDevice.h"
+#include <volk.h>
+#include "Framework/Core/VulkanDevice.hpp"
 #include "imgui.h"
 #include "Framework/Core/DescriptorPool.hpp"
 #include "Framework/Core/DescriptorSetLayout.hpp"
@@ -32,7 +31,7 @@ public:
     void resize(uint32_t width, uint32_t height);
 
     void freeResources();
-    
+
 protected:
     void RenderMenuBar();
     void RenderHierarchy();

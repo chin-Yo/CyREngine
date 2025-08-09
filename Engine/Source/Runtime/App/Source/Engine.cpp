@@ -5,6 +5,7 @@
 #include <atomic>
 #include <chrono>
 #include "Render/RenderSystem.hpp"
+#include <algorithm>
 
 const float Engine::FPSAlpha = 1.f / 100;
 void Engine::LogicalTick(float DeltaTime)
@@ -17,7 +18,7 @@ bool Engine::RendererTick(float DeltaTime)
 }
 void Engine::CalculateFPS(float DeltaTime)
 {
-    DeltaTime = std::min(DeltaTime, 0.5f);
+    DeltaTime = std::min<float>(DeltaTime, 0.5f);
     FrameCount++;
 
     if (FrameCount == 1 || FrameCount % 1000 == 0)

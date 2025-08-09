@@ -1,6 +1,6 @@
 #include "Render/VulkanUIOverlay.hpp"
 
-#include "VulkanTools.h"
+#include "Framework/Core/VulkanTools.hpp"
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
@@ -43,7 +43,7 @@ void UIOverlay::InitImGui(VkInstance instance, VkRenderPass renderPass, VkQueue 
 	io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
 
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
-	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	// io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 	// 设置样式
 	ImGui::StyleColorsDark();
@@ -92,14 +92,13 @@ void UIOverlay::draw()
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
-	
+
 	RenderMenuBar();
 	RenderHierarchy();
 	RenderInspector();
 	RenderProjectBrowser();
 	RenderConsole();
-	RenderViewport();// 3D Scene
-
+	RenderViewport(); // 3D Scene
 
 	ImGui::Render();
 }
@@ -126,7 +125,7 @@ void UIOverlay::RenderMenuBar()
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 	if (opt_fullscreen)
 	{
-		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		const ImGuiViewport *viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(viewport->WorkPos);
 		ImGui::SetNextWindowSize(viewport->WorkSize);
 		ImGui::SetNextWindowViewport(viewport->ID);
@@ -162,7 +161,7 @@ void UIOverlay::RenderMenuBar()
 		ImGui::PopStyleVar(2);
 
 	// Submit the DockSpace
-	ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO &io = ImGui::GetIO();
 	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 	{
 		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
@@ -171,21 +170,33 @@ void UIOverlay::RenderMenuBar()
 
 	if (ImGui::BeginMenuBar())
 	{
-		if (ImGui::BeginMenu("File")) {
-			if (ImGui::MenuItem("New Scene")) {}
-			if (ImGui::MenuItem("Open Scene")) {}
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("New Scene"))
+			{
+			}
+			if (ImGui::MenuItem("Open Scene"))
+			{
+			}
 			ImGui::Separator();
-			if (ImGui::MenuItem("Exit")) {
+			if (ImGui::MenuItem("Exit"))
+			{
 				// glfwSetWindowShouldClose(window, true);
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Edit")) {
-			if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-			if (ImGui::MenuItem("Redo", "CTRL+Y")) {}
+		if (ImGui::BeginMenu("Edit"))
+		{
+			if (ImGui::MenuItem("Undo", "CTRL+Z"))
+			{
+			}
+			if (ImGui::MenuItem("Redo", "CTRL+Y"))
+			{
+			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("View")) {
+		if (ImGui::BeginMenu("View"))
+		{
 
 			ImGui::EndMenu();
 		}
@@ -197,12 +208,30 @@ void UIOverlay::RenderMenuBar()
 			ImGui::MenuItem("Padding", NULL, &opt_padding);
 			ImGui::Separator();
 
-			if (ImGui::MenuItem("Flag: NoDockingOverCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingOverCentralNode) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_NoDockingOverCentralNode; }
-			if (ImGui::MenuItem("Flag: NoDockingSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingSplit) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_NoDockingSplit; }
-			if (ImGui::MenuItem("Flag: NoUndocking", "", (dockspace_flags & ImGuiDockNodeFlags_NoUndocking) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_NoUndocking; }
-			if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_NoResize; }
-			if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar; }
-			if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0, opt_fullscreen)) { dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode; }
+			if (ImGui::MenuItem("Flag: NoDockingOverCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingOverCentralNode) != 0))
+			{
+				dockspace_flags ^= ImGuiDockNodeFlags_NoDockingOverCentralNode;
+			}
+			if (ImGui::MenuItem("Flag: NoDockingSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingSplit) != 0))
+			{
+				dockspace_flags ^= ImGuiDockNodeFlags_NoDockingSplit;
+			}
+			if (ImGui::MenuItem("Flag: NoUndocking", "", (dockspace_flags & ImGuiDockNodeFlags_NoUndocking) != 0))
+			{
+				dockspace_flags ^= ImGuiDockNodeFlags_NoUndocking;
+			}
+			if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))
+			{
+				dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
+			}
+			if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))
+			{
+				dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
+			}
+			if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0, opt_fullscreen))
+			{
+				dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
+			}
 			ImGui::Separator();
 
 			if (ImGui::MenuItem("Close", NULL, false, &dockspaceOpen != NULL))
@@ -214,7 +243,8 @@ void UIOverlay::RenderMenuBar()
 	ImGui::End();
 }
 
-namespace EditorState {
+namespace EditorState
+{
 	int selected_node = -1;
 	std::vector<std::string> console_logs;
 }
@@ -223,9 +253,11 @@ void UIOverlay::RenderHierarchy()
 {
 	ImGui::Begin("Hierarchy");
 
-	const char* nodes[] = { "Camera", "Directional Light", "Player", "Enemy_1", "Enemy_2", "Ground", "Environment" };
-	for (int i = 0; i < IM_ARRAYSIZE(nodes); ++i) {
-		if (ImGui::Selectable(nodes[i], EditorState::selected_node == i)) {
+	const char *nodes[] = {"Camera", "Directional Light", "Player", "Enemy_1", "Enemy_2", "Ground", "Environment"};
+	for (int i = 0; i < IM_ARRAYSIZE(nodes); ++i)
+	{
+		if (ImGui::Selectable(nodes[i], EditorState::selected_node == i))
+		{
 			EditorState::selected_node = i;
 			EditorState::console_logs.push_back("[INFO] Selected '" + std::string(nodes[i]) + "' in Hierarchy.");
 		}
@@ -238,29 +270,34 @@ void UIOverlay::RenderInspector()
 {
 	ImGui::Begin("Inspector");
 
-	if (EditorState::selected_node != -1) {
+	if (EditorState::selected_node != -1)
+	{
 		ImGui::Text("Properties of object %d", EditorState::selected_node);
 		ImGui::Separator();
 
-		static float pos[3] = { 0.0f, 0.0f, 0.0f };
-		static float rot[3] = { 0.0f, 0.0f, 0.0f };
-		static float scale[3] = { 1.0f, 1.0f, 1.0f };
+		static float pos[3] = {0.0f, 0.0f, 0.0f};
+		static float rot[3] = {0.0f, 0.0f, 0.0f};
+		static float scale[3] = {1.0f, 1.0f, 1.0f};
 
-		if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+		{
 			ImGui::DragFloat3("Position", pos, 0.1f);
 			ImGui::DragFloat3("Rotation", rot, 1.0f);
 			ImGui::DragFloat3("Scale", scale, 0.1f);
 		}
 
-		if (ImGui::CollapsingHeader("Mesh Renderer")) {
+		if (ImGui::CollapsingHeader("Mesh Renderer"))
+		{
 			ImGui::Text("Mesh: Cube.obj");
 			ImGui::Text("Material: DefaultMaterial");
 		}
 
-		if (ImGui::Button("Add Component")) {
+		if (ImGui::Button("Add Component"))
+		{
 		}
 	}
-	else {
+	else
+	{
 		ImGui::Text("Select an object in the Hierarchy to see its properties.");
 	}
 
@@ -287,16 +324,19 @@ void UIOverlay::RenderConsole()
 {
 	ImGui::Begin("Console");
 
-	if (ImGui::Button("Clear")) {
+	if (ImGui::Button("Clear"))
+	{
 		EditorState::console_logs.clear();
 	}
 	ImGui::Separator();
 
 	ImGui::BeginChild("LogScrollingRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
-	for (const auto& log : EditorState::console_logs) {
+	for (const auto &log : EditorState::console_logs)
+	{
 		ImGui::TextUnformatted(log.c_str());
 	}
-	if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+	if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+	{
 		ImGui::SetScrollHereY(1.0f);
 	}
 	ImGui::EndChild();
@@ -313,11 +353,9 @@ void UIOverlay::RenderViewport()
 	ImGui::GetWindowDrawList()->AddRectFilled(
 		ImGui::GetCursorScreenPos(),
 		ImVec2(ImGui::GetCursorScreenPos().x + viewportPanelSize.x, ImGui::GetCursorScreenPos().y + viewportPanelSize.y),
-		IM_COL32(0, 0, 0, 255)
-	);
+		IM_COL32(0, 0, 0, 255));
 	ImGui::SetCursorPos(ImVec2(viewportPanelSize.x * 0.5f - 100, viewportPanelSize.y * 0.5f));
 	ImGui::Text("This is the 3D Viewport");
-
 
 	ImGui::End();
 }

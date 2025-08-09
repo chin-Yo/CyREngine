@@ -7,7 +7,9 @@ target_include_directories(${TARGET_NAME} PUBLIC
     ${RUNTIME_DIR}/Core/Include
 )
 
-target_link_libraries(${TARGET_NAME} PUBLIC RuntimeCore Render imgui vulkan_sdk)
+target_link_libraries(${TARGET_NAME} PUBLIC RuntimeCore Render imgui)
+
+target_compile_definitions(${TARGET_NAME} PRIVATE GLM_ENABLE_EXPERIMENTAL)
 
 if(DEFINED ENV{VULKAN_SDK})
     message(STATUS "Found Vulkan SDK at: $ENV{VULKAN_SDK}")

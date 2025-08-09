@@ -1,11 +1,18 @@
+#define VOLK_IMPLEMENTATION
 #include "Render/RenderSystem.hpp"
 #include <iostream>
-#include <Vulkan/vulkan_win32.h>
-#include <VulkanDebug.h>
 #include "GlobalContext.hpp"
-#include <VulkanTools.h>
-#include "Render/RenderSystem.hpp"
 #include <backends/imgui_impl_vulkan.h>
+#include "Framework/Misc/SpirvReflection.hpp"
+#include "Misc/FileLoader.hpp"
+#include "Framework/Core/VulkanTools.hpp"
+#include "Framework/Core/VulkanInitializers.hpp"
+#include "Framework/Core/VulkanDebug.hpp"
+#include "Misc/Paths.hpp"
+
+using namespace spv;
+using namespace SPIRV_CROSS_NAMESPACE;
+using namespace std;
 
 RenderSystem::RenderSystem()
 {
@@ -115,6 +122,8 @@ void RenderSystem::render()
 }
 bool RenderSystem::InitVulkan()
 {
+    VK_CHECK_RESULT(volkInitialize());
+    
     // Create the instance
     VkResult result = CreateInstance();
     if (result != VK_SUCCESS)
@@ -122,7 +131,7 @@ bool RenderSystem::InitVulkan()
         throw std::runtime_error("Failed to create Vulkan instance");
         return false;
     }
-
+    volkLoadInstance(instance);
     // If requested, we enable the default validation layers for debugging
     if (settings.validation)
     {
@@ -174,7 +183,7 @@ bool RenderSystem::InitVulkan()
         return false;
     }
     device = vulkanDevice->logicalDevice;
-
+    volkLoadDevice(device);
     // Get a graphics queue from the device
     vkGetDeviceQueue(device, vulkanDevice->queueFamilyIndices.graphics, 0, &GraphicsQueue);
 
@@ -215,8 +224,8 @@ bool RenderSystem::InitVulkan()
 void RenderSystem::prepare()
 {
     GRuntimeGlobalContext.windowSystem->registerOnWindowIconifyFunc(
-        [this](bool minimized) {this->UpdateIconityState(minimized); }
-    );
+        [this](bool minimized)
+        { this->UpdateIconityState(minimized); });
     createSurface();
     createCommandPool();
     createSwapChain();
@@ -227,6 +236,18 @@ void RenderSystem::prepare()
     setupFrameBuffer();
 
     prepared = true;
+
+    auto spvfrag = FileLoader::ReadShaderBinaryU32(Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.frag.spv"));
+    auto spvvert = FileLoader::ReadShaderBinaryU32(Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.vert.spv"));
+
+    //Spirv::SpirvReflection::reflect_shader(Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.frag.spv"));
+    vkb::SPIRVReflection spirvReflection;
+    std::vector<vkb::ShaderResource> vertresources;
+    vkb::ShaderVariant vertvariant;
+    spirvReflection.reflect_shader_resources(VK_SHADER_STAGE_VERTEX_BIT, spvvert, vertresources, vertvariant);
+    std::vector<vkb::ShaderResource> fragresources;
+    vkb::ShaderVariant fragvariant;
+    spirvReflection.reflect_shader_resources(VK_SHADER_STAGE_VERTEX_BIT, spvfrag, fragresources, fragvariant);
 }
 
 void RenderSystem::prepareFrame()
@@ -293,8 +314,6 @@ void RenderSystem::buildCommandBuffers()
 
         vkCmdBeginRenderPass(drawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-        
-
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), drawCmdBuffers[i]);
 
         vkCmdEndRenderPass(drawCmdBuffers[i]);
@@ -344,11 +363,11 @@ void RenderSystem::windowResize()
 }
 void RenderSystem::renderLoop(float DeltaTime)
 {
-    if (!prepared || IsIconity) {
+    if (!prepared || IsIconity)
+    {
         return;
     }
     prepareFrame();
-    GlobalUI;
     buildCommandBuffers();
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];

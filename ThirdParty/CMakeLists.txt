@@ -1,11 +1,59 @@
-#Creates a folder called "ThirdParty" to organize all third-party libraries
+cmake_policy(SET CMP0079 NEW)  # 允许从外部目录链接目标
+
 set(third_party_folder "ThirdParty")
-#Forces all libraries to be built as static libraries (not shared/DLLs)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
-#source_group("FilterName" FILES file1 file2 ...)
 
-if(NOT TARGET glfw) # glfw-3.4
+# vulkan
+add_library(vulkan INTERFACE)
+set(VULKAN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/include)
+target_sources(vulkan INTERFACE ${VULKAN_INCLUDE_DIR}/vulkan/vulkan.h)
+target_include_directories(vulkan SYSTEM INTERFACE ${VULKAN_INCLUDE_DIR})
+
+target_compile_definitions(vulkan INTERFACE VK_NO_PROTOTYPES)
+
+if(VKB_ENABLE_PORTABILITY)
+    # When portability is enabled, must enable Vulkan beta extensions for access to VK_KHR_portability_subset
+    target_compile_definitions(vulkan INTERFACE VK_ENABLE_BETA_EXTENSIONS)
+endif()
+
+if(ANDROID)
+    target_compile_definitions(vulkan INTERFACE VK_USE_PLATFORM_ANDROID_KHR)
+elseif(WIN32)
+    target_compile_definitions(vulkan INTERFACE VK_USE_PLATFORM_WIN32_KHR)
+elseif(APPLE)
+    target_compile_definitions(vulkan INTERFACE VK_USE_PLATFORM_METAL_EXT)
+elseif(UNIX)
+    # Choose WSI based on VKB_WSI_SELECTION
+    if (VKB_WSI_SELECTION STREQUAL XCB OR VKB_WSI_SELECTION STREQUAL XLIB OR VKB_WSI_SELECTION STREQUAL WAYLAND)
+        find_package(PkgConfig REQUIRED)
+    endif()
+    if (VKB_WSI_SELECTION STREQUAL XCB)
+        pkg_check_modules(XCB xcb REQUIRED)
+        if (XCB_FOUND)
+            target_compile_definitions(vulkan INTERFACE VK_USE_PLATFORM_XCB_KHR)
+        endif()
+    elseif (VKB_WSI_SELECTION STREQUAL XLIB)
+        pkg_check_modules(X11 x11 REQUIRED)
+        if (X11_FOUND)
+            target_compile_definitions(vulkan INTERFACE VK_USE_PLATFORM_XLIB_KHR)
+        endif()
+    elseif (VKB_WSI_SELECTION STREQUAL WAYLAND)
+        pkg_check_modules(WAYLAND wayland-client REQUIRED)
+        if (WAYLAND_FOUND)
+            target_compile_definitions(vulkan INTERFACE VK_USE_PLATFORM_WAYLAND_KHR)
+        endif()
+    elseif (VKB_WSI_SELECTION STREQUAL D2D)
+        set(DIRECT_TO_DISPLAY TRUE)
+        set(DIRECT_TO_DISPLAY TRUE PARENT_SCOPE)
+        target_compile_definitions(vulkan INTERFACE VK_USE_PLATFORM_DISPLAY_KHR)
+    else()
+        message(FATAL_ERROR "Unknown WSI")
+    endif()
+endif()
+
+# glfw-3.4
+if(NOT TARGET glfw) 
     option(GLFW_BUILD_EXAMPLES "" OFF)
     option(GLFW_BUILD_TESTS "" OFF)
     option(GLFW_BUILD_DOCS "" OFF)
@@ -14,7 +62,8 @@ if(NOT TARGET glfw) # glfw-3.4
     set_target_properties(glfw PROPERTIES FOLDER ${third_party_folder}/glfw)
 endif()
 
-if(NOT TARGET glm::glm)  # GLM 1.0.1
+# GLM 1.0.1
+if(NOT TARGET glm::glm)  
     option(GLM_BUILD_TESTS "" OFF)              # Disable test build
     option(GLM_BUILD_LIBRARY "" OFF)            # Disable library build（header-only）
     option(GLM_ENABLE_CXX_17 "" ON)             # Enable C++20 support
@@ -26,91 +75,63 @@ if(NOT TARGET glm::glm)  # GLM 1.0.1
     message(STATUS "GLM configured: C++20=${GLM_ENABLE_CXX_20}, AVX2=${GLM_ENABLE_SIMD_AVX2}")
 endif()
 
+# volk
+set(VOLK_DIR "${CMAKE_CURRENT_SOURCE_DIR}/volk")
+set(VOLK_FILES
+    "${VOLK_DIR}/volk.c"
+    "${VOLK_DIR}/volk.h")
+
+add_library(volk STATIC ${VOLK_FILES})
+set_target_properties(volk PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+target_link_libraries(volk PUBLIC vulkan)
+
+target_include_directories(volk SYSTEM PUBLIC ${VOLK_DIR})
+if (VKB_WSI_SELECTION STREQUAL XCB)
+    target_include_directories(volk SYSTEM PUBLIC ${XCB_INCLUDE_DIRS})
+elseif (VKB_WSI_SELECTION STREQUAL XLIB)
+    target_include_directories(volk SYSTEM PUBLIC ${X11_INCLUDE_DIRS})
+elseif (VKB_WSI_SELECTION STREQUAL WAYLAND)
+    target_include_directories(volk SYSTEM PUBLIC ${WAYLAND_INCLUDE_DIRS})
+endif()
+
+set_property(TARGET volk PROPERTY FOLDER ${third_party_folder}/volk)
+
+# imgui
 if(NOT TARGET imgui)
     add_subdirectory(imgui)
+    target_compile_definitions(imgui PRIVATE IMGUI_IMPL_VULKAN_NO_PROTOTYPES)
+
+    target_link_libraries(imgui PUBLIC volk)
+    
     set_target_properties(imgui PROPERTIES FOLDER ${third_party_folder}/imgui)
 endif()
 
+# ktx
 if(NOT TARGET ktx)
     add_subdirectory(ktx)
+    target_link_libraries(ktx PRIVATE volk)
     set_target_properties(ktx PROPERTIES FOLDER ${third_party_folder}/ktx)
 endif()
 
-
-# Check if the Vulkan SDK is installed
-if(DEFINED ENV{VULKAN_SDK})
-    message(STATUS "Found Vulkan SDK at: $ENV{VULKAN_SDK}")
-    
-    # Define the interface library
-    add_library(vulkan_sdk INTERFACE)
-    
-    # Set include directories
-    target_include_directories(vulkan_sdk INTERFACE "$ENV{VULKAN_SDK}/Include")
-    
-    if(WIN32)
-        target_link_directories(vulkan_sdk INTERFACE "$ENV{VULKAN_SDK}/Lib")
-    else()
-        target_link_directories(vulkan_sdk INTERFACE "$ENV{VULKAN_SDK}/lib")
-    endif()
-    
-    target_link_libraries(vulkan_sdk INTERFACE vulkan-1)
-else()
-    message(FATAL_ERROR "VULKAN_SDK environment variable not set!")
-endif()
-
-if(NOT TARGET SPIRV-Cross)
-    # 只启用反射功能，关闭其他所有选项
-    set(SPIRV_CROSS_ENABLE_GLSL ON CACHE BOOL "" FORCE)  # 强制覆盖
-    set(SPIRV_CROSS_ENABLE_REFLECT ON CACHE BOOL "" FORCE)
-    option(SPIRV_CROSS_ENABLE_HLSL "Enable HLSL target support." OFF)
-    option(SPIRV_CROSS_ENABLE_MSL "Enable MSL target support." OFF)
-    option(SPIRV_CROSS_ENABLE_CPP "Enable C++ target support." ON)
-    option(SPIRV_CROSS_ENABLE_C_API "Enable C API wrapper support in static library." OFF)
-    option(SPIRV_CROSS_ENABLE_UTIL "Enable util module support." OFF)
-
-# 确保静态库模式（因为反射可能需要它）
-    option(SPIRV_CROSS_STATIC "Build the C and C++ API as static libraries." ON)
-    option(SPIRV_CROSS_SHARED "Build the C API as a single shared library." OFF)
-    option(SPIRV_CROSS_CLI "Build the CLI binary. Requires SPIRV_CROSS_STATIC." OFF)
-
-# 其他选项默认关闭
-    option(SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS "Instead of throwing exceptions assert" OFF)
-    option(SPIRV_CROSS_ENABLE_TESTS "Enable SPIRV-Cross tests." OFF)
-    option(SPIRV_CROSS_SANITIZE_ADDRESS "Sanitize address" OFF)
-    option(SPIRV_CROSS_SANITIZE_MEMORY "Sanitize memory" OFF)
-    option(SPIRV_CROSS_SANITIZE_THREADS "Sanitize threads" OFF)
-    option(SPIRV_CROSS_SANITIZE_UNDEFINED "Sanitize undefined" OFF)
-    option(SPIRV_CROSS_FORCE_STL_TYPES "Force use of STL types." OFF)
-    option(SPIRV_CROSS_SKIP_INSTALL "Skips installation targets." OFF)
-    option(SPIRV_CROSS_WERROR "Fail build on warnings." OFF)
-    option(SPIRV_CROSS_MISC_WARNINGS "Misc warnings useful for Travis runs." OFF)
-    option(SPIRV_CROSS_FORCE_PIC "Force position-independent code for all targets." OFF)
-
-# 添加 SPIRV-Cross 子目录
-    add_subdirectory(SPIRV-Cross)
-    #set_target_properties(SPIRV-Cross PROPERTIES FOLDER ${third_party_folder}/SPIRV-Cross)
-endif()
-
+# spdlog
 if(NOT TARGET spdlog)
     option(SPDLOG_BUILD_EXAMPLE "Build SPDLOG examples" OFF)
     option(SPDLOG_INSTALL "Install SPDLOG" OFF)
     add_subdirectory(spdlog)
     set_target_properties(spdlog PROPERTIES FOLDER ${third_party_folder}/spdlog)
 endif()
-# # 自动递归搜索所有头文件
-# file(GLOB_RECURSE HEADER_FILES 
-#     "${CMAKE_CURRENT_SOURCE_DIR}/nlohmann-json/*.h"
-#     "${CMAKE_CURRENT_SOURCE_DIR}/nlohmann-json/*.hpp"
-# )
 
-# set(PROJECT_NAME nlohmann-json)
+# spirv-cross
+add_subdirectory(spirv-cross)
 
-# # 创建INTERFACE库
-# add_library(${PROJECT_NAME} INTERFACE)
+set_target_properties(spirv-cross PROPERTIES FOLDER ${third_party_folder}/spirv-cross POSITION_INDEPENDENT_CODE ON)
+set_target_properties(spirv-cross-c PROPERTIES FOLDER ${third_party_folder}/spirv-cross POSITION_INDEPENDENT_CODE ON)
+set_target_properties(spirv-cross-core PROPERTIES FOLDER ${third_party_folder}/spirv-cross POSITION_INDEPENDENT_CODE ON)
+set_target_properties(spirv-cross-glsl PROPERTIES FOLDER ${third_party_folder}/spirv-cross POSITION_INDEPENDENT_CODE ON)
+set_target_properties(spirv-cross-cpp PROPERTIES FOLDER ${third_party_folder}/spirv-cross POSITION_INDEPENDENT_CODE ON)
+set_target_properties(spirv-cross-hlsl PROPERTIES FOLDER ${third_party_folder}/spirv-cross POSITION_INDEPENDENT_CODE ON)
+set_target_properties(spirv-cross-msl PROPERTIES FOLDER ${third_party_folder}/spirv-cross POSITION_INDEPENDENT_CODE ON)
+set_target_properties(spirv-cross-reflect PROPERTIES FOLDER ${third_party_folder}/spirv-cross POSITION_INDEPENDENT_CODE ON)
+set_target_properties(spirv-cross-util PROPERTIES FOLDER ${third_party_folder}/spirv-cross POSITION_INDEPENDENT_CODE ON)
 
-# # 添加头文件
-# target_sources(${PROJECT_NAME} INTERFACE
-#     ${HEADER_FILES}
-# )
-
-# set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "nlohmann-json")

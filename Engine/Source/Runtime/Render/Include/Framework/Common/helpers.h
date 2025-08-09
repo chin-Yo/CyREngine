@@ -36,8 +36,9 @@
 
 #include "glm_common.h"
 #include <glm/gtx/hash.hpp>
+#include <volk.h>
 
-namespace vks
+namespace vkb
 {
 	template <typename T>
 	inline void read(std::istringstream &is, T &value)

@@ -92,7 +92,7 @@ std::string Paths::GetShaderPath()
         throw std::runtime_error("Could not find project root directory.");
     }
 
-    fs::path assetPath = projectRoot / "Engine/Shaders/spv";
+    fs::path assetPath = projectRoot / "Engine/Shaders";
 
     if (!fs::exists(assetPath))
     {

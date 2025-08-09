@@ -55,7 +55,6 @@
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4996)
-#pragma warning(disable : 4065) // switch with 'default' but not 'case'.
 #endif
 
 #ifndef SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
@@ -200,7 +199,6 @@ struct spvc_resources_s : ScratchMemoryAllocation
 	SmallVector<spvc_reflected_resource> separate_samplers;
 	SmallVector<spvc_reflected_resource> acceleration_structures;
 	SmallVector<spvc_reflected_resource> gl_plain_uniforms;
-	SmallVector<spvc_reflected_resource> tensors;
 
 	SmallVector<spvc_reflected_builtin_resource> builtin_inputs;
 	SmallVector<spvc_reflected_builtin_resource> builtin_outputs;
@@ -565,10 +563,6 @@ spvc_result spvc_compiler_options_set_uint(spvc_compiler_options options, spvc_c
 
 	case SPVC_COMPILER_OPTION_MSL_ENABLE_POINT_SIZE_BUILTIN:
 		options->msl.enable_point_size_builtin = value != 0;
-		break;
-
-	case SPVC_COMPILER_OPTION_MSL_ENABLE_POINT_SIZE_DEFAULT:
-		options->msl.enable_point_size_default = value != 0;
 		break;
 
 	case SPVC_COMPILER_OPTION_MSL_DISABLE_RASTERIZATION:
@@ -1873,8 +1867,6 @@ bool spvc_resources_s::copy_resources(const ShaderResources &resources)
 		return false;
 	if (!copy_resources(gl_plain_uniforms, resources.gl_plain_uniforms))
 		return false;
-	if (!copy_resources(tensors, resources.tensors))
-		return false;
 	if (!copy_resources(builtin_inputs, resources.builtin_inputs))
 		return false;
 	if (!copy_resources(builtin_outputs, resources.builtin_outputs))
@@ -2028,11 +2020,6 @@ spvc_result spvc_resources_get_resource_list_for_type(spvc_resources resources, 
 
 	case SPVC_RESOURCE_TYPE_GL_PLAIN_UNIFORM:
 		list = &resources->gl_plain_uniforms;
-		break;
-
-	case SPVC_RESOURCE_TYPE_TENSOR:
-		list = &resources->tensors;
-		break;
 
 	default:
 		break;

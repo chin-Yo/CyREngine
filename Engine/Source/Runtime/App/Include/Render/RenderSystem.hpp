@@ -1,7 +1,7 @@
 #pragma once
 
-#include "vulkan/vulkan.hpp"
-#include "VulkanSwapChain.h"
+#include <volk.h>
+#include "Framework/Core/VulkanSwapChain.hpp"
 #include "VulkanUIOverlay.hpp"
 #include <optional>
 #include "Framework/Core/RenderPass.hpp"
@@ -21,6 +21,7 @@ private:
     void createUI();
     void setupFrameBuffer();
     void UpdateIconityState(bool iconified);
+
 public:
     RenderSystem();
     ~RenderSystem();
@@ -40,7 +41,7 @@ public:
     void windowResize();
 
     void buildCommandBuffers();
-    
+
     UIOverlay *GlobalUI = nullptr;
 
 public:

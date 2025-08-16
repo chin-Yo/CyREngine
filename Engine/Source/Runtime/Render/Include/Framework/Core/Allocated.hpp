@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Framework/Common/error.h"
+#include "Framework/Common/VkError.hpp"
 #include "Framework/Core/VulkanResource.hpp"
 #include "Framework/Common/VkCommon.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
@@ -547,5 +547,5 @@ namespace vkb
 	{
 		return update(reinterpret_cast<const uint8_t *>(data), size, offset);
 	}
-	
+
 } // namespace vkb

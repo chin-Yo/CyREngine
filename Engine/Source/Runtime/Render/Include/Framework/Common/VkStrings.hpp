@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 #include <volk.h>
-#include "helpers.h"
+#include "VkHelpers.hpp"
 
 namespace vkb
 {

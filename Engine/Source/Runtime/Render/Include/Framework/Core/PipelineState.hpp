@@ -19,7 +19,7 @@
 
 #include <vector>
 #include <volk.h>
-#include "Framework/Common/helpers.h"
+#include "Framework/Common/VkHelpers.hpp"
 #include "Framework/Core/PipelineLayout.hpp"
 #include <map>
 

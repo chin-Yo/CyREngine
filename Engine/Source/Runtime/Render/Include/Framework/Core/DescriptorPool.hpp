@@ -19,7 +19,7 @@
 
 #include <unordered_map>
 #include "Framework/Core/VulkanDevice.hpp"
-#include "Framework/Common/helpers.h"
+#include "Framework/Common/VkHelpers.hpp"
 
 namespace vkb
 {

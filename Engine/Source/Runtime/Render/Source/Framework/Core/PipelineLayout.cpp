@@ -19,7 +19,7 @@
 #include "Framework/Core/DescriptorSetLayout.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
 #include "Framework/Core/ShaderModule.hpp"
-#include "Framework/Common/error.h"
+#include "Framework/Common/VkError.hpp"
 
 namespace vkb
 {

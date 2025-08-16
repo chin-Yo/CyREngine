@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-#include "Framework/Common/error.h"
+#include "Framework/Common/VkError.hpp"
 
-#include "Framework/Common/helpers.h"
+#include "Framework/Common/VkHelpers.hpp"
 
 namespace vkb
 {

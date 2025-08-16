@@ -4,8 +4,9 @@
 #include "VulkanBuffer.hpp"
 #include "Framework/Core/Debug.hpp"
 
-struct VulkanDevice
+class VulkanDevice
 {
+public:
 	/** @brief Physical device representation */
 	VkPhysicalDevice physicalDevice;
 	/** @brief Logical device representation (application's view of the device) */

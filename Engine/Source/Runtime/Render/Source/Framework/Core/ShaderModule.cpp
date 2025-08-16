@@ -21,6 +21,9 @@
 #include "Framework/Misc/SpirvReflection.hpp"
 #include <algorithm>
 
+#include "Framework/Common/error.h"
+#include "Logging/Logger.hpp"
+
 namespace vkb
 {
     ShaderModule::ShaderModule(VulkanDevice &device, VkShaderStageFlagBits stage, const ShaderSource &shader_source, const std::string &entry_point, const ShaderVariant &shader_variant) : device{device},
@@ -38,7 +41,7 @@ namespace vkb
         // Reflect all shader resources
         if (!spirv_reflection.reflect_shader_resources(stage, spirv, resources, shader_variant))
         {
-            throw; // TODO //VulkanException{VK_ERROR_INITIALIZATION_FAILED};
+            throw VulkanException{VK_ERROR_INITIALIZATION_FAILED};
         }
 
         // Generate a unique id, determined by source and variant
@@ -101,7 +104,7 @@ namespace vkb
                 }
                 else
                 {
-                    // TODO LOGW("Resource `{}` does not support dynamic.", resource_name);
+                    LOG_WARN("Resource `{}` does not support dynamic.", resource_name);
                 }
             }
             else
@@ -111,7 +114,7 @@ namespace vkb
         }
         else
         {
-            // TODO LOGW("Resource `{}` not found for shader.", resource_name);
+            LOG_WARN("Resource `{}` not found for shader.", resource_name);
         }
     }
 

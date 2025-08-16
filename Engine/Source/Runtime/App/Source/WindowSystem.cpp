@@ -1,5 +1,7 @@
 #include "WindowSystem.hpp"
 
+#include "Logging/Logger.hpp"
+
 WindowSystem::~WindowSystem()
 {
     glfwDestroyWindow(m_window);
@@ -10,7 +12,7 @@ void WindowSystem::initialize(WindowCreateInfo create_info)
 {
     if (!glfwInit())
     {
-        // TODO: LOG_FATAL(__FUNCTION__, "failed to initialize GLFW");
+        LOG_CRITICAL("failed to initialize GLFW")
         return;
     }
 
@@ -21,7 +23,7 @@ void WindowSystem::initialize(WindowCreateInfo create_info)
     m_window = glfwCreateWindow(create_info.width, create_info.height, create_info.title, nullptr, nullptr);
     if (!m_window)
     {
-        // TODO: LOG_FATAL(__FUNCTION__, "failed to create window");
+        LOG_CRITICAL("failed to create window")
         glfwTerminate();
         return;
     }

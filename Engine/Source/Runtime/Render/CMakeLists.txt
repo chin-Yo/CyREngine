@@ -46,7 +46,7 @@ target_include_directories(${TARGET_NAME} PUBLIC
 
 target_link_libraries(${TARGET_NAME} PUBLIC PhysicsEngine volk RuntimeCore spdlog::spdlog)
 target_link_libraries(${TARGET_NAME} PUBLIC glm spirv-cross-glsl spirv-cross-reflect) 
-target_link_libraries(${TARGET_NAME} PUBLIC imgui)
+target_link_libraries(${TARGET_NAME} PUBLIC imgui vma)
 target_link_libraries(${TARGET_NAME} PUBLIC ktx)
 
 

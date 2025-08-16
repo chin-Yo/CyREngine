@@ -1,6 +1,6 @@
-#include "App/Include/Editor.hpp"
+#include "Editor.hpp"
 #include <assert.h>
-#include "App/Include/Engine.hpp"
+#include "Engine.hpp"
 
 Editor::Editor()
 {

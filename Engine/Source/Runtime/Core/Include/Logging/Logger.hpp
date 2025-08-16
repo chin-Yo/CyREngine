@@ -43,18 +43,18 @@ private:
     static std::shared_ptr<spdlog::logger> logger_;
 };
 
-#define LOG_TRACE(...) SPDLOG_LOGGER_TRACE(Logger::GetLogger(), __VA_ARGS__)
-#define LOG_DEBUG(...) SPDLOG_LOGGER_DEBUG(Logger::GetLogger(), __VA_ARGS__)
-#define LOG_INFO(...) SPDLOG_LOGGER_INFO(Logger::GetLogger(), __VA_ARGS__)
-#define LOG_WARN(...) SPDLOG_LOGGER_WARN(Logger::GetLogger(), __VA_ARGS__)
-#define LOG_ERROR(...) SPDLOG_LOGGER_ERROR(Logger::GetLogger(), __VA_ARGS__)
-#define LOG_CRITICAL(...) SPDLOG_LOGGER_CRITICAL(Logger::GetLogger(), __VA_ARGS__)
+#define LOG_TRACE(...) SPDLOG_LOGGER_TRACE(Logger::GetLogger(), __VA_ARGS__);
+#define LOG_DEBUG(...) SPDLOG_LOGGER_DEBUG(Logger::GetLogger(), __VA_ARGS__);
+#define LOG_INFO(...) SPDLOG_LOGGER_INFO(Logger::GetLogger(), __VA_ARGS__);
+#define LOG_WARN(...) SPDLOG_LOGGER_WARN(Logger::GetLogger(), __VA_ARGS__);
+#define LOG_ERROR(...) SPDLOG_LOGGER_ERROR(Logger::GetLogger(), __VA_ARGS__);
+#define LOG_CRITICAL(...) SPDLOG_LOGGER_CRITICAL(Logger::GetLogger(), __VA_ARGS__);
 
-#define LOG_TRACE_P(...) SPDLOG_LOGGER_TRACE(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
-#define LOG_DEBUG_P(...) SPDLOG_LOGGER_DEBUG(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
-#define LOG_INFO_P(...) SPDLOG_LOGGER_INFO(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
-#define LOG_WARN_P(...) SPDLOG_LOGGER_WARN(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
-#define LOG_ERROR_P(...) SPDLOG_LOGGER_ERROR(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
-#define LOG_CRITICAL_P(...) SPDLOG_LOGGER_CRITICAL(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__))
+#define LOG_TRACE_P(...) SPDLOG_LOGGER_TRACE(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__));
+#define LOG_DEBUG_P(...) SPDLOG_LOGGER_DEBUG(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__));
+#define LOG_INFO_P(...) SPDLOG_LOGGER_INFO(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__));
+#define LOG_WARN_P(...) SPDLOG_LOGGER_WARN(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__));
+#define LOG_ERROR_P(...) SPDLOG_LOGGER_ERROR(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__));
+#define LOG_CRITICAL_P(...) SPDLOG_LOGGER_CRITICAL(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__));
 
 #endif // LOGGER_H

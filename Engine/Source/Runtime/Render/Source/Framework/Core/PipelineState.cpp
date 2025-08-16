@@ -178,7 +178,7 @@ namespace vkb
 	{
 		if (render_pass)
 		{
-			if (render_pass->get_handle() != new_render_pass.get_handle())
+			if (render_pass->GetHandle() != new_render_pass.GetHandle())
 			{
 				render_pass = &new_render_pass;
 

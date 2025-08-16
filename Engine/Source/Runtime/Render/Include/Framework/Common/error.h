@@ -21,31 +21,32 @@
 #include <stdexcept>
 #include <string>
 #include <volk.h>
+#include "Framework/Common/VkStrings.hpp"
 
 namespace vkb
 {
-	/**
-	 * @brief Vulkan exception structure
-	 */
-	class VulkanException : public std::runtime_error
-	{
-	public:
-		/**
-		 * @brief Vulkan exception constructor
-		 */
-		VulkanException(VkResult result, const std::string &msg = "Vulkan error");
+    /**
+     * @brief Vulkan exception structure
+     */
+    class VulkanException : public std::runtime_error
+    {
+    public:
+        /**
+         * @brief Vulkan exception constructor
+         */
+        VulkanException(VkResult result, const std::string& msg = "Vulkan error");
 
-		/**
-		 * @brief Returns the Vulkan error code as string
-		 * @return String message of exception
-		 */
-		const char *what() const noexcept override;
+        /**
+         * @brief Returns the Vulkan error code as string
+         * @return String message of exception
+         */
+        const char* what() const noexcept override;
 
-		VkResult result;
+        VkResult result;
 
-	private:
-		std::string error_message;
-	};
+    private:
+        std::string error_message;
+    };
 } // namespace vkb
 
 /// @brief Helper macro to test the result of Vulkan calls which can return an error.

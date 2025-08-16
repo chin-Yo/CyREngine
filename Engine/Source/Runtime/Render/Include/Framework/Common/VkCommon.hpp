@@ -79,4 +79,14 @@ namespace vkb
 	 * @return True if format is a depth, false otherwise.
 	 */
 	bool is_depth_format(VkFormat format);
+
+
+	/**
+	* @brief Helper functions for compression controls
+	*/
+	std::vector<VkImageCompressionFixedRateFlagBitsEXT> fixed_rate_compression_flags_to_vector(VkImageCompressionFixedRateFlagsEXT flags);
+
+	VkImageCompressionPropertiesEXT query_supported_fixed_rate_compression(VkPhysicalDevice gpu, const VkImageCreateInfo &create_info);
+
+	VkImageCompressionPropertiesEXT query_applied_compression(VkDevice device, VkImage image);
 }

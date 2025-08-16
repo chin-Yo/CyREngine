@@ -196,7 +196,7 @@ namespace vkb
 	{
 		static_assert(std::is_arithmetic<T>::value, "T must be numeric");
 
-		if (static_cast<uintmax_t>(value) > static_cast<uintmax_t>(std::numeric_limits<uint32_t>::max()))
+		if (static_cast<uintmax_t>(value) > static_cast<uintmax_t>(UINT32_MAX))
 		{
 			throw std::runtime_error("to_u32() failed, value is too big to be converted to uint32_t");
 		}

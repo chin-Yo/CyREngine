@@ -23,6 +23,8 @@
 #include <spirv_parser.hpp>
 #include <spirv_reflect.hpp>
 
+#include "Logging/Logger.hpp"
+
 namespace vkb
 {
 	namespace
@@ -33,7 +35,7 @@ namespace vkb
 										 std::vector<ShaderResource> &resources,
 										 const ShaderVariant &variant)
 		{
-			// TODO LOGE("Not implemented! Read shader resources of type.");
+			LOG_ERROR("Not implemented! Read shader resources of type.");
 			int a = 0;
 		}
 
@@ -43,7 +45,7 @@ namespace vkb
 											 ShaderResource & /*shader_resource*/,
 											 const ShaderVariant & /* variant */)
 		{
-			// TODO LOGE("Not implemented! Read resources decoration of type.");
+			LOG_ERROR("Not implemented! Read resources decoration of type.");
 			int a = 0;
 		}
 

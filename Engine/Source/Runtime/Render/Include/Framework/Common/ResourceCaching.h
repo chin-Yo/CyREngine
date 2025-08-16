@@ -113,7 +113,7 @@ namespace std
 		{
 			std::size_t result = 0;
 
-			vkb::hash_combine(result, render_pass.get_handle());
+			vkb::hash_combine(result, render_pass.GetHandle());
 
 			return result;
 		}
@@ -462,7 +462,7 @@ namespace std
 			// For graphics only
 			if (auto render_pass = pipeline_state.get_render_pass())
 			{
-				vkb::hash_combine(result, render_pass->get_handle());
+				vkb::hash_combine(result, render_pass->GetHandle());
 			}
 
 			vkb::hash_combine(result, pipeline_state.get_specialization_constant_state());

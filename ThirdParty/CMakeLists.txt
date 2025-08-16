@@ -135,3 +135,15 @@ set_target_properties(spirv-cross-msl PROPERTIES FOLDER ${third_party_folder}/sp
 set_target_properties(spirv-cross-reflect PROPERTIES FOLDER ${third_party_folder}/spirv-cross POSITION_INDEPENDENT_CODE ON)
 set_target_properties(spirv-cross-util PROPERTIES FOLDER ${third_party_folder}/spirv-cross POSITION_INDEPENDENT_CODE ON)
 
+# rttr
+# set(BUILD_STATIC ON CACHE BOOL "Build RTTR as static library")
+# set(BUILD_RTTR_DYNAMIC OFF CACHE BOOL "Disable dynamic library build")
+# add_subdirectory(rttr)
+# set_target_properties(rttr_core_lib PROPERTIES FOLDER ${third_party_folder}/rttr)
+
+# vma
+add_library(vma INTERFACE)
+set(VMA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vma/include)
+target_sources(vma INTERFACE ${VMA_DIR}/vk_mem_alloc.h)
+target_include_directories(vma SYSTEM INTERFACE ${VMA_DIR})
+target_link_libraries(vma INTERFACE vulkan)

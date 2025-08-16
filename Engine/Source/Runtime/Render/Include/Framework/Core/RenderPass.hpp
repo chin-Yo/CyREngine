@@ -22,6 +22,8 @@
 #include "Framework/Core/VulkanDevice.hpp"
 #include <vector>
 #include <optional>
+
+#include "VulkanResource.hpp"
 // #include "core/vulkan_resource.h"
 
 namespace vkb
@@ -79,7 +81,7 @@ namespace vkb
 		}
 	};
 
-	class RenderPass // TODO : public vkb::core::VulkanResourceC<VkRenderPass>
+	class RenderPass : public VulkanResource<VkRenderPass>
 	{
 	public:
 		RenderPass(VulkanDevice &device,
@@ -100,22 +102,7 @@ namespace vkb
 		const uint32_t get_color_output_count(uint32_t subpass_index) const;
 
 		VkExtent2D get_render_area_granularity() const;
-
-		VkRenderPass get_handle() const
-		{
-			return handle;
-		}
-
-		inline const std::string &get_debug_name() const
-		{
-			return debug_name;
-		}
-
-		inline void set_debug_name(const std::string &name)
-		{
-			debug_name = name;
-		}
-
+	
 	private:
 		size_t subpass_count;
 
@@ -123,12 +110,6 @@ namespace vkb
 		void create_renderpass(const std::vector<Attachment> &attachments, const std::vector<LoadStoreInfo> &load_store_infos, const std::vector<SubpassInfo> &subpasses);
 
 		std::vector<uint32_t> color_output_count;
-
-		VulkanDevice &device;
-
-		VkRenderPass handle{VK_NULL_HANDLE};
-
-		std::string debug_name;
 	};
 } // namespace vkb
 

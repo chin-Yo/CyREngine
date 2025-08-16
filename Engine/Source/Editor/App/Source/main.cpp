@@ -3,8 +3,8 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
-#include "App/Include/Engine.hpp"
-#include "App/Include/Editor.hpp"
+#include "Engine.hpp"
+#include "Editor.hpp"
 
 int main(int argc, char **argv)
 {

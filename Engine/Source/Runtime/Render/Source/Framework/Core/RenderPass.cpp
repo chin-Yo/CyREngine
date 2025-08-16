@@ -26,6 +26,7 @@
 #include "spdlog/fmt/fmt.h"
 #include "Framework/Common/error.h"
 #include "Framework/Common/VkCommon.hpp"
+#include "Logging/Logger.hpp"
 // #include "rendering/render_target.h"
 
 namespace vkb
@@ -335,7 +336,7 @@ namespace vkb
 	{
 		if (attachments.size() != load_store_infos.size())
 		{
-			// TODO LOGW("Render Pass creation: size of attachment list and load/store info list does not match: {} vs {}", attachments.size(), load_store_infos.size());
+			LOG_WARN("Render Pass creation: size of attachment list and load/store info list does not match: {} vs {}", attachments.size(), load_store_infos.size());
 		}
 
 		auto attachment_descriptions = get_attachment_descriptions<T_AttachmentDescription>(attachments, load_store_infos);
@@ -348,7 +349,7 @@ namespace vkb
 		std::vector<std::vector<T_AttachmentReference>> depth_resolve_attachments{subpass_count};
 
 		std::string new_debug_name{};
-		const bool needs_debug_name = get_debug_name().empty();
+		const bool needs_debug_name = GetDebugName().empty();
 		if (needs_debug_name)
 		{
 			new_debug_name = fmt::format("RP with {} subpasses:\n", subpasses.size());
@@ -505,7 +506,7 @@ namespace vkb
 		create_info.dependencyCount = to_u32(subpass_dependencies.size());
 		create_info.pDependencies = subpass_dependencies.data();
 
-		auto result = create_vk_renderpass(device.logicalDevice, create_info, &handle);
+		auto result = create_vk_renderpass(GetDevice().logicalDevice, create_info, &GetHandle());
 
 		if (result != VK_SUCCESS)
 		{
@@ -514,11 +515,11 @@ namespace vkb
 
 		if (needs_debug_name)
 		{
-			set_debug_name(new_debug_name);
+			SetDebugName(new_debug_name);
 		}
 	}
 
-	RenderPass::RenderPass(VulkanDevice &device, const std::vector<Attachment> &attachments, const std::vector<LoadStoreInfo> &load_store_infos, const std::vector<SubpassInfo> &subpasses) : device(device),
+	RenderPass::RenderPass(VulkanDevice &device, const std::vector<Attachment> &attachments, const std::vector<LoadStoreInfo> &load_store_infos, const std::vector<SubpassInfo> &subpasses) : VulkanResource{VK_NULL_HANDLE,&device},
 																																															  subpass_count{std::max<size_t>(1, subpasses.size())}, // At least 1 subpass
 																																															  color_output_count{}
 	{
@@ -532,7 +533,7 @@ namespace vkb
 		}
 	}
 
-	RenderPass::RenderPass(RenderPass &&other) : device(other.device),
+	RenderPass::RenderPass(RenderPass &&other) : VulkanResource{std::move(other)},
 												 subpass_count{other.subpass_count},
 												 color_output_count{other.color_output_count}
 	{
@@ -541,9 +542,9 @@ namespace vkb
 	RenderPass::~RenderPass()
 	{
 		// Destroy render pass
-		if (device && device.logicalDevice)
+		if (GetDevice() && GetDevice().logicalDevice)
 		{
-			vkDestroyRenderPass(device.logicalDevice, handle, nullptr);
+			vkDestroyRenderPass(GetDevice().logicalDevice, GetHandle(), nullptr);
 		}
 	}
 
@@ -555,7 +556,7 @@ namespace vkb
 	VkExtent2D RenderPass::get_render_area_granularity() const
 	{
 		VkExtent2D render_area_granularity = {};
-		vkGetRenderAreaGranularity(device.logicalDevice, handle, &render_area_granularity);
+		vkGetRenderAreaGranularity(GetDevice().logicalDevice, GetHandle(), &render_area_granularity);
 
 		return render_area_granularity;
 	}

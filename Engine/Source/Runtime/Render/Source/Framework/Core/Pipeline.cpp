@@ -288,7 +288,7 @@ GraphicsPipeline::GraphicsPipeline(VulkanDevice &        device,
 	create_info.pDynamicState       = &dynamic_state;
 
 	create_info.layout     = pipeline_state.get_pipeline_layout().get_handle();
-	create_info.renderPass = pipeline_state.get_render_pass()->get_handle();
+	create_info.renderPass = pipeline_state.get_render_pass()->GetHandle();
 	create_info.subpass    = pipeline_state.get_subpass_index();
 
 	auto result = vkCreateGraphicsPipelines(device.logicalDevice, pipeline_cache, 1, &create_info, nullptr, &handle);

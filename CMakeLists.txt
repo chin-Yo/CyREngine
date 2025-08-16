@@ -8,6 +8,7 @@ endif()
 
 if(MSVC)
     add_compile_options(/utf-8)
+    add_compile_definitions(NOMINMAX)
 endif()
 
 set(CMAKE_CXX_STANDARD 17)

@@ -2,8 +2,9 @@
 #include <volk.h>
 
 #include "VulkanBuffer.hpp"
-#include "Framework/Core/Debug.hpp"
 #include "Framework/Misc/ResourceCache.hpp"
+#include "Framework/Core/Debug.hpp"
+
 
 class VulkanDevice
 {
@@ -50,20 +51,28 @@ public:
 	VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin = false);
 	void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandPool pool, bool free = true);
 	void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free = true);
+	
 	bool IsExtensionSupported(std::string extension) const;
 	bool IsEnableExtension(const char *extension) const;
+	
 	VkFormat getSupportedDepthFormat(bool checkSamplingSupport);
 
-	std::unique_ptr<vkb::DebugUtils> debugUtils;
-	inline const vkb::DebugUtils &get_debug_utils() const
-	{
-		return *debugUtils;
-	}
 
-	//vkb::ResourceCache resource_cache{*this};
+
 
 protected:
+	vkb::ResourceCache resource_cache{*this};
+
+	
 	/** @brief List of extensions supported by the device */
 	std::vector<std::string> SupportedExtensions;
 	std::vector<std::string> EnabledExtensions;
+	
+	std::unique_ptr<vkb::DebugUtils> debugUtils;
+
+public:
+	
+	const vkb::DebugUtils &GetDebugUtils() const;
+	vkb::ResourceCache &get_resource_cache();
+	
 };

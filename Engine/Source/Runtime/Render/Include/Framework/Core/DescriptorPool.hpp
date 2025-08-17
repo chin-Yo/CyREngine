@@ -18,8 +18,10 @@
 #pragma once
 
 #include <unordered_map>
-#include "Framework/Core/VulkanDevice.hpp"
+//#include "Framework/Core/VulkanDevice.hpp"
 #include "Framework/Common/VkHelpers.hpp"
+
+class VulkanDevice;
 
 namespace vkb
 {

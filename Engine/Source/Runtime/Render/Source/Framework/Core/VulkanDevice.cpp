@@ -1,8 +1,6 @@
 #include "Framework/Core/VulkanDevice.hpp"
-
 #include <iostream>
 #include <unordered_set>
-
 #include "Framework/Core/VulkanTexture.hpp"
 #include "Logging/Logger.hpp"
 
@@ -602,4 +600,14 @@ VkFormat VulkanDevice::getSupportedDepthFormat(bool checkSamplingSupport)
         }
     }
     throw std::runtime_error("Could not find a matching depth format");
+}
+
+const vkb::DebugUtils& VulkanDevice::GetDebugUtils() const
+{
+    return *debugUtils;
+}
+
+vkb::ResourceCache& VulkanDevice::get_resource_cache()
+{
+    return resource_cache;
 }

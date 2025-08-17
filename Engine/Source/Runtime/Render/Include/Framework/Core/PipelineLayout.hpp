@@ -16,10 +16,9 @@
  */
 
 #pragma once
-
-#include "Framework/Common/VkHelpers.hpp"
 #include <vector>
 #include <unordered_map>
+#include "Framework/Common/VkHelpers.hpp"
 #include "Framework/Core/ShaderModule.hpp"
 
 class VulkanDevice;

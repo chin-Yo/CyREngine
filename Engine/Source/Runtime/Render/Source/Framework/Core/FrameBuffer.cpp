@@ -17,6 +17,8 @@
 
 #include "Framework/Core/FrameBuffer.hpp"
 
+#include "Framework/Core/RenderPass.hpp"
+#include "Framework/Core/VulkanDevice.hpp"
 
 namespace vkb
 {

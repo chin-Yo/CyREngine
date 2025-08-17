@@ -23,10 +23,12 @@
 #undef None
 #endif
 
-class VulkanDevice;
 
 namespace vkb
 {
+
+    class VulkanDevice;
+
     /// Types of shader resources
     enum class ShaderResourceType
     {

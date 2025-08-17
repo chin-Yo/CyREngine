@@ -1,11 +1,11 @@
 #pragma once
-#include "Framework/Core/VulkanDevice.hpp"
 #include "Framework/Common/VkCommon.hpp"
 #include <volk.h>
 #include <vulkan/vulkan.hpp>
 
 namespace vkb
 {
+    class VulkanDevice;
     template <typename Handle>
     class VulkanResource
     {

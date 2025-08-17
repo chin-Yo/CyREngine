@@ -2,12 +2,12 @@
 #include <volk.h>
 
 #include "VulkanBuffer.hpp"
-#include "Framework/Misc/ResourceCache.hpp"
 #include "Framework/Core/Debug.hpp"
+#include "Framework/Misc/ResourceCache.hpp"
 
 namespace vkb
 {
-	
+
 class VulkanDevice
 {
 public:

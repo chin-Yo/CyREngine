@@ -21,7 +21,6 @@
 #include "Framework/Common/VkError.hpp"
 #include "Framework/Core/VulkanResource.hpp"
 #include "Framework/Common/VkCommon.hpp"
-#include "Framework/Core/VulkanDevice.hpp"
 #include <volk.h>
 
 namespace vkb
@@ -48,52 +47,8 @@ namespace vkb
 	 * @tparam DeviceType The type of the device.
 	 * @param device The Vulkan device.
 	 */
-	inline void InitVma(VulkanDevice &device)
-	{
-		VmaVulkanFunctions vma_vulkan_func{};
-		vma_vulkan_func.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
-		vma_vulkan_func.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
-
-		VmaAllocatorCreateInfo allocator_info{};
-		allocator_info.pVulkanFunctions = &vma_vulkan_func;
-		allocator_info.physicalDevice = device.physicalDevice;
-		allocator_info.device = device.logicalDevice;
-		allocator_info.instance = device.instance;
-
-		bool can_get_memory_requirements = device.IsExtensionSupported(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
-		bool has_dedicated_allocation = device.IsExtensionSupported(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
-		if (can_get_memory_requirements && has_dedicated_allocation && device.IsEnableExtension(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME))
-		{
-			allocator_info.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
-		}
-
-		if (device.IsExtensionSupported(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME) && device.IsEnableExtension(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME))
-		{
-			allocator_info.flags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
-		}
-
-		if (device.IsExtensionSupported(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) && device.IsEnableExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME))
-		{
-			allocator_info.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
-		}
-
-		if (device.IsExtensionSupported(VK_EXT_MEMORY_PRIORITY_EXTENSION_NAME) && device.IsEnableExtension(VK_EXT_MEMORY_PRIORITY_EXTENSION_NAME))
-		{
-			allocator_info.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT;
-		}
-
-		if (device.IsExtensionSupported(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME) && device.IsEnableExtension(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME))
-		{
-			allocator_info.flags |= VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT;
-		}
-
-		if (device.IsExtensionSupported(VK_AMD_DEVICE_COHERENT_MEMORY_EXTENSION_NAME) && device.IsEnableExtension(VK_AMD_DEVICE_COHERENT_MEMORY_EXTENSION_NAME))
-		{
-			allocator_info.flags |= VMA_ALLOCATOR_CREATE_AMD_DEVICE_COHERENT_MEMORY_BIT;
-		}
-
-		init(allocator_info);
-	}
+	void InitVma(VulkanDevice &device);
+	
 
 	/**
 	 * @brief Shuts down the VMA allocator and releases all resources.  Should be preceeded with a call to `init`.

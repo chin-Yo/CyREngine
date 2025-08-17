@@ -17,6 +17,7 @@
 
 #include "Framework/Rendering/RenderTarget.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
+#include "Framework/Core/Image.hpp"
 
 namespace vkb
 {

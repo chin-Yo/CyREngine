@@ -5,15 +5,14 @@
 #include "Framework/Core/PipelineLayout.hpp"
 #include "Framework/Core/DescriptorSetLayout.hpp"
 #include "Framework/Core/DescriptorPool.hpp"
-//#include "Framework/Core/RenderPass.hpp"
-//#include "Framework/Core/Pipeline.hpp"
-//#include "Framework/Core/DescriptorSet.hpp"
-//#include "Framework/Core/Framebuffer.hpp"
+#include "Framework/Core/RenderPass.hpp"
+#include "Framework/Core/Pipeline.hpp"
+#include "Framework/Core/DescriptorSet.hpp"
+#include "Framework/Core/Framebuffer.hpp"
 
 
 namespace vkb
 {
-    class ImageView;
     class VulkanDevice;
     /**
      * @brief Struct to hold the internal state of the Resource Cache
@@ -29,15 +28,15 @@ namespace vkb
 
         std::unordered_map<std::size_t, DescriptorPool> descriptor_pools;
 
-        //std::unordered_map<std::size_t, RenderPass> render_passes;
+        std::unordered_map<std::size_t, RenderPass> render_passes;
 
-        //std::unordered_map<std::size_t, GraphicsPipeline> graphics_pipelines;
+        std::unordered_map<std::size_t, GraphicsPipeline> graphics_pipelines;
 
-       //std::unordered_map<std::size_t, ComputePipeline> compute_pipelines;
+        std::unordered_map<std::size_t, ComputePipeline> compute_pipelines;
 
-        //std::unordered_map<std::size_t, DescriptorSet> descriptor_sets;
+        std::unordered_map<std::size_t, DescriptorSet> descriptor_sets;
 
-        //std::unordered_map<std::size_t, Framebuffer> framebuffers;
+        std::unordered_map<std::size_t, Framebuffer> framebuffers;
     };
 
     class ResourceCache

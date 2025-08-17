@@ -19,10 +19,8 @@
 
 #include "Framework/Common/VkHelpers.hpp"
 #include <volk.h>
-#include "Framework/Core/VulkanDevice.hpp"
 #include <vector>
 #include <optional>
-
 #include "VulkanResource.hpp"
 // #include "core/vulkan_resource.h"
 

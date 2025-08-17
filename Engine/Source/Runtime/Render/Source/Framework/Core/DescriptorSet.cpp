@@ -4,7 +4,7 @@
 #include "Framework/Common/ResourceCaching.hpp"
 #include <algorithm>
 #include <vector>
-
+#include "Framework/Core/VulkanDevice.hpp"
 #include "Logging/Logger.hpp"
 
 namespace vkb

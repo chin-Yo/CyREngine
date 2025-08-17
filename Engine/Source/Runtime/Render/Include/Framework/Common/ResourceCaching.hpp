@@ -25,7 +25,7 @@
 #include "Framework/Core/PipelineState.hpp"
 #include "Framework/Core/ShaderModule.hpp"
 #include "VkHelpers.hpp"
-#include "Framework/Misc/ResourceRecord.hpp"
+//#include "Framework/Misc/ResourceRecord.hpp"
 #include "Framework/Rendering/RenderTarget.hpp"
 #include "Logging/Logger.hpp"
 
@@ -684,15 +684,15 @@ namespace vkb
             hash_param(seed, args...);
         }
 
-        template <class T, class... A>
+        /*template <class T, class... A>
         struct RecordHelper
         {
-            size_t record(ResourceRecord& /*recorder*/, A&.../*args*/)
+            size_t record(ResourceRecord& /*recorder#1#, A&.../*args#1#)
             {
                 return 0;
             }
 
-            void index(ResourceRecord& /*recorder*/, size_t /*index*/, T& /*resource*/)
+            void index(ResourceRecord& /*recorder#1#, size_t /*index#1#, T& /*resource#1#)
             {
             }
         };
@@ -752,62 +752,63 @@ namespace vkb
                 recorder.set_graphics_pipeline(index, graphics_pipeline);
             }
         };
-    } // namespace
+    } // namespace*/
 
-    template <class T, class... A>
-    T& request_resource(VulkanDevice& device, ResourceRecord* recorder, std::unordered_map<std::size_t, T>& resources,
-                        A&... args)
-    {
-        RecordHelper<T, A...> record_helper;
-
-        std::size_t hash{0U};
-        hash_param(hash, args...);
-
-        auto res_it = resources.find(hash);
-
-        if (res_it != resources.end())
+        /*template <class T, class... A>
+        T& request_resource(VulkanDevice& device, ResourceRecord* recorder, std::unordered_map<std::size_t, T>& resources,
+                            A&... args)
         {
+            RecordHelper<T, A...> record_helper;
+    
+            std::size_t hash{0U};
+            hash_param(hash, args...);
+    
+            auto res_it = resources.find(hash);
+    
+            if (res_it != resources.end())
+            {
+                return res_it->second;
+            }
+    
+            // If we do not have it already, create and cache it
+            const char* res_type = typeid(T).name();
+            size_t res_id = resources.size();
+    
+            LOG_DEBUG("Building #{} cache object ({})", res_id, res_type);
+    
+            // Only error handle in release
+    #ifndef DEBUG
+            try
+            {
+    #endif
+                T resource(device, args...);
+    
+                auto res_ins_it = resources.emplace(hash, std::move(resource));
+    
+                if (!res_ins_it.second)
+                {
+                    throw std::runtime_error{
+                        std::string{"Insertion error for #"} + std::to_string(res_id) + "cache object (" + res_type + ")"
+                    };
+                }
+    
+                res_it = res_ins_it.first;
+    
+                if (recorder)
+                {
+                    size_t index = record_helper.record(*recorder, args...);
+                    record_helper.index(*recorder, index, res_it->second);
+                }
+    #ifndef DEBUG
+            }
+            catch (const std::exception& e)
+            {
+                LOG_ERROR("Creation error for #{} cache object ({})", res_id, res_type);
+                throw;
+            }
+    #endif
+    
             return res_it->second;
-        }
-
-        // If we do not have it already, create and cache it
-        const char* res_type = typeid(T).name();
-        size_t res_id = resources.size();
-
-        LOG_DEBUG("Building #{} cache object ({})", res_id, res_type);
-
-        // Only error handle in release
-#ifndef DEBUG
-        try
-        {
-#endif
-            T resource(device, args...);
-
-            auto res_ins_it = resources.emplace(hash, std::move(resource));
-
-            if (!res_ins_it.second)
-            {
-                throw std::runtime_error{
-                    std::string{"Insertion error for #"} + std::to_string(res_id) + "cache object (" + res_type + ")"
-                };
-            }
-
-            res_it = res_ins_it.first;
-
-            if (recorder)
-            {
-                size_t index = record_helper.record(*recorder, args...);
-                record_helper.index(*recorder, index, res_it->second);
-            }
-#ifndef DEBUG
-        }
-        catch (const std::exception& e)
-        {
-            LOG_ERROR("Creation error for #{} cache object ({})", res_id, res_type);
-            throw;
-        }
-#endif
-
-        return res_it->second;
-    }
-} // namespace vkb
+        }*/
+    } // namespace vkb
+}

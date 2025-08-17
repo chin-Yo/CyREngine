@@ -17,7 +17,6 @@
 
 #pragma once
 
-#include "Framework/Core/Image.hpp"
 #include "Framework/Core/ImageView.hpp"
 
 namespace vkb

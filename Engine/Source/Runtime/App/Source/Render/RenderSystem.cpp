@@ -1,13 +1,17 @@
 #define VOLK_IMPLEMENTATION
+#define VMA_IMPLEMENTATION
 #include "Render/RenderSystem.hpp"
 #include <iostream>
 #include "GlobalContext.hpp"
 #include <backends/imgui_impl_vulkan.h>
+
+#include "Framework/Core/Image.hpp"
 #include "Framework/Misc/SpirvReflection.hpp"
 #include "Misc/FileLoader.hpp"
 #include "Framework/Core/VulkanTools.hpp"
 #include "Framework/Core/VulkanInitializers.hpp"
 #include "Framework/Core/VulkanDebug.hpp"
+#include "Framework/Core/VulkanDevice.hpp"
 #include "Misc/Paths.hpp"
 
 using namespace spv;
@@ -174,7 +178,7 @@ bool RenderSystem::InitVulkan()
     // Vulkan device creation
     // This is handled by a separate class that gets a logical device representation
     // and encapsulates functions related to a device
-    vulkanDevice = new VulkanDevice(physicalDevice);
+    vulkanDevice = new vkb::VulkanDevice(physicalDevice);
 
     result = vulkanDevice->createLogicalDevice(enabledFeatures, enabledDeviceExtensions, deviceCreatepNextChain);
     if (result != VK_SUCCESS)
@@ -182,6 +186,8 @@ bool RenderSystem::InitVulkan()
         vks::tools::exitFatal("Could not create Vulkan device: \n" + vks::tools::errorString(result), result);
         return false;
     }
+    vulkanDevice->instance = instance;
+    vkb::InitVma(*vulkanDevice);
     device = vulkanDevice->logicalDevice;
     volkLoadDevice(device);
     // Get a graphics queue from the device
@@ -234,20 +240,33 @@ void RenderSystem::prepare()
     createPipelineCache();
     createUI();
     setupFrameBuffer();
-
+    
     prepared = true;
 
     auto spvfrag = FileLoader::ReadShaderBinaryU32(Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.frag.spv"));
     auto spvvert = FileLoader::ReadShaderBinaryU32(Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.vert.spv"));
 
     //Spirv::SpirvReflection::reflect_shader(Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.frag.spv"));
-    vkb::SPIRVReflection spirvReflection;
+    /*vkb::SPIRVReflection spirvReflection;
     std::vector<vkb::ShaderResource> vertresources;
     vkb::ShaderVariant vertvariant;
     spirvReflection.reflect_shader_resources(VK_SHADER_STAGE_VERTEX_BIT, spvvert, vertresources, vertvariant);
     std::vector<vkb::ShaderResource> fragresources;
     vkb::ShaderVariant fragvariant;
     spirvReflection.reflect_shader_resources(VK_SHADER_STAGE_VERTEX_BIT, spvfrag, fragresources, fragvariant);
+
+    vkb::Image image{*vulkanDevice,vkb::ImageBuilder{ 512,512,1}.with_usage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)};*/
+    vkb::ShaderVariant vertvariant;
+    vkb::ShaderModule SMVert{*vulkanDevice,VK_SHADER_STAGE_VERTEX_BIT,Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.vert.spv")
+        ,"main",vertvariant};
+
+    vkb::ShaderVariant fragvariant;
+    vkb::ShaderModule SMFrag{*vulkanDevice,VK_SHADER_STAGE_FRAGMENT_BIT,Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.frag.spv")
+        ,"main",fragvariant};
+
+    std::vector<vkb::ShaderModule*> shaders = {&SMVert,&SMFrag};
+    
+    vkb::PipelineLayout layout{*vulkanDevice,shaders};
 }
 
 void RenderSystem::prepareFrame()

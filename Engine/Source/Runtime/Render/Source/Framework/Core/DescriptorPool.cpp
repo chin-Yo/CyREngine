@@ -17,6 +17,7 @@
 
 #include "Framework/Core/DescriptorPool.hpp"
 #include "Framework/Core/DescriptorSetLayout.hpp"
+#include "Framework/Core/VulkanDevice.hpp"
 
 namespace vkb
 {

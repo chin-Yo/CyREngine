@@ -20,17 +20,19 @@
 #include <Misc/FileLoader.hpp>
 #include "Framework/Misc/SpirvReflection.hpp"
 #include <algorithm>
-
-#include "Framework/Common/error.h"
+#include "Framework/Common/VkError.hpp"
 #include "Logging/Logger.hpp"
+#include "Framework/Core/VulkanDevice.hpp"
 
 namespace vkb
 {
-    ShaderModule::ShaderModule(VulkanDevice &device, VkShaderStageFlagBits stage, const ShaderSource &shader_source, const std::string &entry_point, const ShaderVariant &shader_variant) : device{device},
-                                                                                                                                                                                            stage{stage},
-                                                                                                                                                                                            entry_point{entry_point}
+    ShaderModule::ShaderModule(VulkanDevice &device, VkShaderStageFlagBits stage, const ShaderSource &shader_source,
+                               const std::string &entry_point, const ShaderVariant &shader_variant) : device{device},
+                                                                                                      stage{stage},
+                                                                                                      entry_point{entry_point}
     {
-        debug_name = fmt::format("{} [variant {:X}] [entrypoint {}]", shader_source.get_filename(), shader_variant.get_id(), entry_point);
+        debug_name = fmt::format("{} [variant {:X}] [entrypoint {}]", shader_source.get_filename(),
+                                 shader_variant.get_id(), entry_point);
 
         // Shaders in binary SPIR-V format can be loaded directly
         spirv = FileLoader::ReadShaderBinaryU32(shader_source.get_filename());
@@ -46,8 +48,9 @@ namespace vkb
 
         // Generate a unique id, determined by source and variant
         std::hash<std::string> hasher{};
-        id = hasher(std::string{reinterpret_cast<const char *>(spirv.data()),
-                                reinterpret_cast<const char *>(spirv.data() + spirv.size())});
+        id = hasher(std::string{
+            reinterpret_cast<const char *>(spirv.data()),
+            reinterpret_cast<const char *>(spirv.data() + spirv.size())});
     }
 
     ShaderModule::ShaderModule(ShaderModule &&other) : device{other.device},
@@ -118,9 +121,50 @@ namespace vkb
         }
     }
 
+    ShaderVariant::ShaderVariant(std::string &&preamble, std::vector<std::string> &&processes) : preamble{std::move(preamble)},
+                                                                                                 processes{std::move(processes)}
+    {
+        update_id();
+    }
+
     size_t ShaderVariant::get_id() const
     {
         return id;
+    }
+
+    void ShaderVariant::add_definitions(const std::vector<std::string> &definitions)
+    {
+        for (auto &definition : definitions)
+        {
+            add_define(definition);
+        }
+    }
+
+    void ShaderVariant::add_define(const std::string &def)
+    {
+        processes.push_back("D" + def);
+
+        std::string tmp_def = def;
+
+        // The "=" needs to turn into a space
+        size_t pos_equal = tmp_def.find_first_of("=");
+        if (pos_equal != std::string::npos)
+        {
+            tmp_def[pos_equal] = ' ';
+        }
+
+        preamble.append("#define " + tmp_def + "\n");
+
+        update_id();
+    }
+
+    void ShaderVariant::add_undefine(const std::string &undef)
+    {
+        processes.push_back("U" + undef);
+
+        preamble.append("#undef " + undef + "\n");
+
+        update_id();
     }
 
     void ShaderVariant::add_runtime_array_size(const std::string &runtime_array_name, size_t size)
@@ -140,6 +184,16 @@ namespace vkb
         this->runtime_array_sizes = sizes;
     }
 
+    const std::string &ShaderVariant::get_preamble() const
+    {
+        return preamble;
+    }
+
+    const std::vector<std::string> &ShaderVariant::get_processes() const
+    {
+        return processes;
+    }
+
     const std::unordered_map<std::string, size_t> &ShaderVariant::get_runtime_array_sizes() const
     {
         return runtime_array_sizes;
@@ -147,8 +201,16 @@ namespace vkb
 
     void ShaderVariant::clear()
     {
+        preamble.clear();
+        processes.clear();
         runtime_array_sizes.clear();
-        id = 0;
+        update_id();
+    }
+
+    void ShaderVariant::update_id()
+    {
+        std::hash<std::string> hasher{};
+        id = hasher(preamble);
     }
 
     ShaderSource::ShaderSource(const std::string &filename) : filename{filename},

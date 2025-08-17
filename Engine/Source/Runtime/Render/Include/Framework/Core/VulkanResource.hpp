@@ -1,11 +1,11 @@
 #pragma once
-#include "Framework/Core/VulkanDevice.hpp"
 #include "Framework/Common/VkCommon.hpp"
 #include <volk.h>
 #include <vulkan/vulkan.hpp>
 
 namespace vkb
 {
+    class VulkanDevice;
     template <typename Handle>
     class VulkanResource
     {
@@ -129,7 +129,7 @@ namespace vkb
         debug_name = name;
         if (device && !debug_name.empty())
         {
-            GetDevice().get_debug_utils().set_debug_name(GetDevice().logicalDevice, GetObjectType(), GetHandleU64(), debug_name.c_str());
+            GetDevice().GetDebugUtils().set_debug_name(GetDevice().logicalDevice, GetObjectType(), GetHandleU64(), debug_name.c_str());
         }
     }
 

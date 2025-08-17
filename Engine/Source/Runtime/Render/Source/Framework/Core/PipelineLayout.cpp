@@ -19,7 +19,7 @@
 #include "Framework/Core/DescriptorSetLayout.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
 #include "Framework/Core/ShaderModule.hpp"
-#include "Framework/Common/error.h"
+#include "Framework/Common/VkError.hpp"
 
 namespace vkb
 {
@@ -79,7 +79,7 @@ namespace vkb
 		// Create a descriptor set layout for each shader set in the shader modules
 		for (auto &shader_set_it : shader_sets)
 		{
-			// TODO : descriptor_set_layouts.emplace_back(&device.get_resource_cache().request_descriptor_set_layout(shader_set_it.first, shader_modules, shader_set_it.second));
+			descriptor_set_layouts.emplace_back(&device.get_resource_cache().request_descriptor_set_layout(shader_set_it.first, shader_modules, shader_set_it.second));
 		}
 
 		// Collect all the descriptor set layout handles, maintaining set order

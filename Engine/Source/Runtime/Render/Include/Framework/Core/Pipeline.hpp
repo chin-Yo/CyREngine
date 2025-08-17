@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "Framework/Common/helpers.h"
+#include "Framework/Common/VkHelpers.hpp"
 #include "Framework/Core/PipelineState.hpp"
 
 class VulkanDevice;

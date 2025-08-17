@@ -14,11 +14,11 @@
 class UIOverlay
 {
 public:
-    VulkanDevice *vulkanDevice{nullptr};
+    vkb::VulkanDevice *vulkanDevice{nullptr};
 
     vks::DescriptorPool descriptorPool;
 
-    UIOverlay(VulkanDevice *device);
+    UIOverlay(vkb::VulkanDevice *device);
     ~UIOverlay();
 
     void InitImGui(VkInstance instance, VkRenderPass renderPass, VkQueue queue, uint32_t MinImageCount, uint32_t ImageCount);

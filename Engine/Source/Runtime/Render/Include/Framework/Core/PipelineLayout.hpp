@@ -16,18 +16,19 @@
  */
 
 #pragma once
-
-#include "Framework/Common/helpers.h"
 #include <vector>
 #include <unordered_map>
-#include "Framework/Core/ShaderModule.hpp"
 
-class VulkanDevice;
+#include "ShaderModule.hpp"
+#include "Framework/Common/VkHelpers.hpp"
+
+
 namespace vkb
 {
 
 	class ShaderModule;
 	class DescriptorSetLayout;
+	class VulkanDevice;
 
 	class PipelineLayout
 	{

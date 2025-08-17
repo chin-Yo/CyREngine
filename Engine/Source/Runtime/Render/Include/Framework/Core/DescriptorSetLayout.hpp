@@ -5,6 +5,8 @@
 #include <memory>
 #include <string>
 
+#include "ShaderModule.hpp"
+
 
 namespace vks
 {
@@ -52,11 +54,7 @@ class VulkanDevice;
 
 namespace vkb
 {
-    class DescriptorPool;
-
     class ShaderModule;
-
-    struct ShaderResource;
 
     /**
      * @brief Caches DescriptorSet objects for the shader's set index.

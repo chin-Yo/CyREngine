@@ -17,18 +17,15 @@
 
 #pragma once
 
-#include "Framework/Common/helpers.h"
+#include "Framework/Common/VkHelpers.hpp"
 #include "Framework/Common/VkCommon.hpp"
-#include "Framework/Core/VulkanDevice.hpp"
-
 
 
 namespace vkb
 {
 	class DescriptorSetLayout;
 	class DescriptorPool;
-
-
+	class VulkanDevice;
 	/**
 	 * @brief A descriptor set handle allocated from a \ref DescriptorPool.
 	 *        Destroying the handle has no effect, as the pool manages the lifecycle of its descriptor sets.
@@ -100,7 +97,7 @@ namespace vkb
 		void prepare();
 
 	private:
-		VulkanDevice& device;
+		VulkanDevice &device;
 
 		const DescriptorSetLayout &descriptor_set_layout;
 

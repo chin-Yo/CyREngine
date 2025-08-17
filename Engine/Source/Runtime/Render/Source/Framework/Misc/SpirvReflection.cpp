@@ -16,7 +16,7 @@
  */
 
 #include "Framework/Misc/SpirvReflection.hpp"
-#include "Framework/Common/helpers.h"
+#include "Framework/Common/VkHelpers.hpp"
 #include <iostream>
 #include "Misc/FileLoader.hpp"
 #include "spirv_cross.hpp"
@@ -464,24 +464,28 @@ namespace vkb
 	}
 } // namespace vkb
 
-std::vector<uint32_t> load_spirv_file(const std::string& path) {
+std::vector<uint32_t> load_spirv_file(const std::string &path)
+{
 	std::ifstream file(path, std::ios::ate | std::ios::binary);
 
-	if (!file.is_open()) {
+	if (!file.is_open())
+	{
 		throw std::runtime_error("Failed to open file: " + path);
 	}
 
 	size_t fileSize = (size_t)file.tellg();
-	if (fileSize % sizeof(uint32_t) != 0) {
+	if (fileSize % sizeof(uint32_t) != 0)
+	{
 		throw std::runtime_error("File size is not a multiple of 4: " + path);
 	}
 
 	std::vector<uint32_t> buffer(fileSize / sizeof(uint32_t));
 
 	file.seekg(0);
-	file.read(reinterpret_cast<char*>(buffer.data()), fileSize);
+	file.read(reinterpret_cast<char *>(buffer.data()), fileSize);
 
-	if (!file) {
+	if (!file)
+	{
 		throw std::runtime_error("Error while reading file: " + path);
 	}
 

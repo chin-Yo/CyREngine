@@ -18,14 +18,15 @@
 #pragma once
 
 #include <unordered_map>
-#include "Framework/Core/VulkanDevice.hpp"
-#include "Framework/Common/helpers.h"
+#include "Framework/Common/VkHelpers.hpp"
+
 
 namespace vkb
 {
 
 	class DescriptorSetLayout;
 
+	class VulkanDevice;
 	/**
 	 * @brief Manages an array of fixed size VkDescriptorPool and is able to allocate descriptor sets
 	 */

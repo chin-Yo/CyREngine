@@ -1,10 +1,10 @@
 #include "Framework/Core/DescriptorSet.hpp"
 #include "Framework/Core/DescriptorPool.hpp"
 #include "Framework/Core/DescriptorSetLayout.hpp"
-#include "Framework/Common/ResourceCaching.h"
+#include "Framework/Common/ResourceCaching.hpp"
 #include <algorithm>
 #include <vector>
-
+#include "Framework/Core/VulkanDevice.hpp"
 #include "Logging/Logger.hpp"
 
 namespace vkb

@@ -1,7 +1,7 @@
 #include "Framework/Core/DescriptorSetLayout.hpp"
 #include "Framework/Core/ShaderModule.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
-#include "Framework/Common/error.h"
+#include "Framework/Common/VkError.hpp"
 #include <algorithm>
 
 namespace vks
@@ -21,7 +21,6 @@ namespace vks
     DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout &&other) noexcept
         : m_device(other.m_device), m_layout(other.m_layout)
     {
-        // 窃取资源，并将源对象置于无效状态
         other.m_device = VK_NULL_HANDLE;
         other.m_layout = VK_NULL_HANDLE;
     }
@@ -159,8 +158,8 @@ namespace vkb
                                              const uint32_t set_index,
                                              const std::vector<ShaderModule *> &shader_modules,
                                              const std::vector<ShaderResource> &resource_set) : device{device},
-                                                                                                     set_index{set_index},
-                                                                                                     shader_modules{shader_modules}
+                                                                                                set_index{set_index},
+                                                                                                shader_modules{shader_modules}
     {
         // NOTE: `shader_modules` is passed in mainly for hashing their handles in `request_resource`.
         //        This way, different pipelines (with different shaders / shader variants) will get

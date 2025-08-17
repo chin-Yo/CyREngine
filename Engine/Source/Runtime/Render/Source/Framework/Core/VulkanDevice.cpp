@@ -4,6 +4,7 @@
 #include <unordered_set>
 
 #include "Framework/Core/VulkanTexture.hpp"
+#include "Logging/Logger.hpp"
 
 
 /**
@@ -40,7 +41,9 @@ VulkanDevice::VulkanDevice(VkPhysicalDevice physicalDevice)
         {
             for (auto &ext : extensions)
             {
-                supportedExtensions.push_back(ext.extensionName);
+                SupportedExtensions.push_back(ext.extensionName);
+                //EnabledExtensions.push_back(ext.extensionName);
+                LOG_INFO("Supported extension: {} (specVersion: {})", ext.extensionName, ext.specVersion)
             }
         }
     }
@@ -172,12 +175,14 @@ VkResult VulkanDevice::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
     // Due to differing queue family configurations of Vulkan implementations this can be a bit tricky, especially if the application
     // requests different queue types
 
+    enabledFeatures = features;
+    
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
 
     // Get queue family indices for the requested queue family types
     // Note that the indices may overlap depending on the implementation
 
-    const float defaultQueuePriority(0.0f);
+    constexpr float defaultQueuePriority(0.0f);
 
     // Graphics queue
     if (requestedQueueTypes & VK_QUEUE_GRAPHICS_BIT)
@@ -237,13 +242,11 @@ VkResult VulkanDevice::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
         // Else we use the same queue
         queueFamilyIndices.transfer = queueFamilyIndices.graphics;
     }
-
-    // Create the logical device representation
-    std::vector<const char *> deviceExtensions(enabledExtensions);
+    
     if (useSwapChain)
     {
         // If the device will be used for presenting to a display via a swapchain we need to request the swapchain extension
-        deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+        EnabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     }
 
     VkDeviceCreateInfo deviceCreateInfo = {};
@@ -264,11 +267,11 @@ VkResult VulkanDevice::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
         deviceCreateInfo.pNext = &physicalDeviceFeatures2;
     }
 
-    if (deviceExtensions.size() > 0)
+    /*if (deviceExtensions.size() > 0)
     {
         for (const char *enabledExtension : deviceExtensions)
         {
-            if (!extensionSupported(enabledExtension))
+            if (!IsExtensionSupported(enabledExtension))
             {
                 std::cerr << "Enabled device extension \"" << enabledExtension << "\" is not present at device level\n";
             }
@@ -276,8 +279,19 @@ VkResult VulkanDevice::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
 
         deviceCreateInfo.enabledExtensionCount = (uint32_t)deviceExtensions.size();
         deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
-    }
+    }*/
+    std::vector<const char*> names;
 
+    if (EnabledExtensions.size() > 0)
+    {
+        deviceCreateInfo.enabledExtensionCount = (uint32_t)EnabledExtensions.size();
+        names.reserve(EnabledExtensions.size());
+        for (const auto& ext : EnabledExtensions) {
+            names.push_back(ext.c_str());
+        }
+        deviceCreateInfo.ppEnabledExtensionNames = names.data();
+    }
+    
     this->enabledFeatures = enabledFeatures;
 
     VkResult result = vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &logicalDevice);
@@ -544,10 +558,16 @@ void VulkanDevice::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue que
  *
  * @return True if the extension is supported (present in the list read at device creation time)
  */
-bool VulkanDevice::extensionSupported(std::string extension)
+bool VulkanDevice::IsExtensionSupported(std::string extension) const
 {
-    return (std::find(supportedExtensions.begin(), supportedExtensions.end(), extension) != supportedExtensions.end());
+    return (std::find(SupportedExtensions.begin(), SupportedExtensions.end(), extension) != SupportedExtensions.end());
 }
+
+bool VulkanDevice::IsEnableExtension(const char* extension) const
+{
+    return (std::find(EnabledExtensions.begin(), EnabledExtensions.end(), extension) != EnabledExtensions.end());
+}
+
 
 /**
  * Select the best-fit depth format for this device from a list of possible depth (and stencil) formats

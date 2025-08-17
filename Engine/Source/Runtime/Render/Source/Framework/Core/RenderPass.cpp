@@ -573,7 +573,7 @@ namespace vkb
                                                                             std::max<size_t>(1, subpasses.size())}, // At least 1 subpass
                                                                         color_output_count{}
     {
-        if (device.extensionSupported(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME))
+        if (device.IsExtensionSupported(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME))
         {
             create_renderpass<VkSubpassDescription2KHR, VkAttachmentDescription2KHR, VkAttachmentReference2KHR,
                               VkSubpassDependency2KHR, VkRenderPassCreateInfo2KHR>(

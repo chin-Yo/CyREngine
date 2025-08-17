@@ -3,10 +3,13 @@
 
 #include "VulkanBuffer.hpp"
 #include "Framework/Core/Debug.hpp"
+#include "Framework/Misc/ResourceCache.hpp"
 
 class VulkanDevice
 {
 public:
+	
+	VkInstance instance;
 	/** @brief Physical device representation */
 	VkPhysicalDevice physicalDevice;
 	/** @brief Logical device representation (application's view of the device) */
@@ -21,8 +24,6 @@ public:
 	VkPhysicalDeviceMemoryProperties memoryProperties;
 	/** @brief Queue family properties of the physical device */
 	std::vector<VkQueueFamilyProperties> queueFamilyProperties;
-	/** @brief List of extensions supported by the device */
-	std::vector<std::string> supportedExtensions;
 	/** @brief Default command pool for the graphics queue family index */
 	VkCommandPool commandPool = VK_NULL_HANDLE;
 	/** @brief Contains queue family indices */
@@ -49,7 +50,8 @@ public:
 	VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin = false);
 	void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandPool pool, bool free = true);
 	void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free = true);
-	bool extensionSupported(std::string extension);
+	bool IsExtensionSupported(std::string extension) const;
+	bool IsEnableExtension(const char *extension) const;
 	VkFormat getSupportedDepthFormat(bool checkSamplingSupport);
 
 	std::unique_ptr<vkb::DebugUtils> debugUtils;
@@ -57,4 +59,11 @@ public:
 	{
 		return *debugUtils;
 	}
+
+	//vkb::ResourceCache resource_cache{*this};
+
+protected:
+	/** @brief List of extensions supported by the device */
+	std::vector<std::string> SupportedExtensions;
+	std::vector<std::string> EnabledExtensions;
 };

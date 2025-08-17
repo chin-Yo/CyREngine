@@ -1,8 +1,11 @@
 #define VOLK_IMPLEMENTATION
+#define VMA_IMPLEMENTATION
 #include "Render/RenderSystem.hpp"
 #include <iostream>
 #include "GlobalContext.hpp"
 #include <backends/imgui_impl_vulkan.h>
+
+#include "Framework/Core/Image.hpp"
 #include "Framework/Misc/SpirvReflection.hpp"
 #include "Misc/FileLoader.hpp"
 #include "Framework/Core/VulkanTools.hpp"
@@ -182,6 +185,8 @@ bool RenderSystem::InitVulkan()
         vks::tools::exitFatal("Could not create Vulkan device: \n" + vks::tools::errorString(result), result);
         return false;
     }
+    vulkanDevice->instance = instance;
+    vkb::InitVma(*vulkanDevice);
     device = vulkanDevice->logicalDevice;
     volkLoadDevice(device);
     // Get a graphics queue from the device
@@ -234,7 +239,7 @@ void RenderSystem::prepare()
     createPipelineCache();
     createUI();
     setupFrameBuffer();
-
+    
     prepared = true;
 
     auto spvfrag = FileLoader::ReadShaderBinaryU32(Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.frag.spv"));
@@ -248,6 +253,8 @@ void RenderSystem::prepare()
     std::vector<vkb::ShaderResource> fragresources;
     vkb::ShaderVariant fragvariant;
     spirvReflection.reflect_shader_resources(VK_SHADER_STAGE_VERTEX_BIT, spvfrag, fragresources, fragvariant);
+
+    vkb::Image image{*vulkanDevice,vkb::ImageBuilder{ 512,512,1}.with_usage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)};
 }
 
 void RenderSystem::prepareFrame()

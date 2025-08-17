@@ -68,8 +68,8 @@ void Engine::LimitFPS(float &DeltaTime)
 
 void Engine::StartEngine(const std::string &ConfigFilePath)
 {
-    GRuntimeGlobalContext.startSystems(ConfigFilePath);
     Logger::Init();
+    GRuntimeGlobalContext.startSystems(ConfigFilePath);
     LOG_INFO("Engine started");
 }
 

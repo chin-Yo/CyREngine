@@ -83,7 +83,7 @@ namespace vkb
 			throw VulkanException{result};
 		}
 
-		device.get_debug_utils().set_debug_name(device.logicalDevice,
+		device.GetDebugUtils().set_debug_name(device.logicalDevice,
 												VK_OBJECT_TYPE_SHADER_MODULE, reinterpret_cast<uint64_t>(stage.module),
 												shader_module->get_debug_name().c_str());
 
@@ -167,7 +167,7 @@ namespace vkb
 				throw VulkanException{result};
 			}
 
-			device.get_debug_utils().set_debug_name(device.logicalDevice,
+			device.GetDebugUtils().set_debug_name(device.logicalDevice,
 													VK_OBJECT_TYPE_SHADER_MODULE, reinterpret_cast<uint64_t>(stage_create_info.module),
 													shader_module->get_debug_name().c_str());
 

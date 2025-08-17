@@ -20,9 +20,9 @@
 #include <Misc/FileLoader.hpp>
 #include "Framework/Misc/SpirvReflection.hpp"
 #include <algorithm>
-
 #include "Framework/Common/VkError.hpp"
 #include "Logging/Logger.hpp"
+#include "Framework/Core/VulkanDevice.hpp"
 
 namespace vkb
 {

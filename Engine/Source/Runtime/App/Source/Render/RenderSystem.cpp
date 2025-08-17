@@ -11,6 +11,7 @@
 #include "Framework/Core/VulkanTools.hpp"
 #include "Framework/Core/VulkanInitializers.hpp"
 #include "Framework/Core/VulkanDebug.hpp"
+#include "Framework/Core/VulkanDevice.hpp"
 #include "Misc/Paths.hpp"
 
 using namespace spv;
@@ -246,7 +247,7 @@ void RenderSystem::prepare()
     auto spvvert = FileLoader::ReadShaderBinaryU32(Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.vert.spv"));
 
     //Spirv::SpirvReflection::reflect_shader(Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.frag.spv"));
-    vkb::SPIRVReflection spirvReflection;
+    /*vkb::SPIRVReflection spirvReflection;
     std::vector<vkb::ShaderResource> vertresources;
     vkb::ShaderVariant vertvariant;
     spirvReflection.reflect_shader_resources(VK_SHADER_STAGE_VERTEX_BIT, spvvert, vertresources, vertvariant);
@@ -254,7 +255,18 @@ void RenderSystem::prepare()
     vkb::ShaderVariant fragvariant;
     spirvReflection.reflect_shader_resources(VK_SHADER_STAGE_VERTEX_BIT, spvfrag, fragresources, fragvariant);
 
-    vkb::Image image{*vulkanDevice,vkb::ImageBuilder{ 512,512,1}.with_usage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)};
+    vkb::Image image{*vulkanDevice,vkb::ImageBuilder{ 512,512,1}.with_usage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)};*/
+    vkb::ShaderVariant vertvariant;
+    vkb::ShaderModule SMVert{*vulkanDevice,VK_SHADER_STAGE_VERTEX_BIT,Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.vert.spv")
+        ,"main",vertvariant};
+
+    vkb::ShaderVariant fragvariant;
+    vkb::ShaderModule SMFrag{*vulkanDevice,VK_SHADER_STAGE_FRAGMENT_BIT,Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.frag.spv")
+        ,"main",fragvariant};
+
+    std::vector<vkb::ShaderModule*> shaders = {&SMVert,&SMFrag};
+    
+    vkb::PipelineLayout layout{*vulkanDevice,shaders};
 }
 
 void RenderSystem::prepareFrame()

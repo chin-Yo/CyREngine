@@ -21,7 +21,6 @@ namespace vks
     DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout &&other) noexcept
         : m_device(other.m_device), m_layout(other.m_layout)
     {
-        // 窃取资源，并将源对象置于无效状态
         other.m_device = VK_NULL_HANDLE;
         other.m_layout = VK_NULL_HANDLE;
     }

@@ -1,5 +1,4 @@
 #include "Render/VulkanUIOverlay.hpp"
-
 #include "Framework/Core/VulkanTools.hpp"
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
@@ -7,7 +6,7 @@
 #include "GlobalContext.hpp"
 #include "Framework/Core/RenderPass.hpp"
 
-UIOverlay::UIOverlay(VulkanDevice *device) : descriptorPool(vks::DescriptorPoolBuilder(device->logicalDevice)
+UIOverlay::UIOverlay(vkb::VulkanDevice *device) : descriptorPool(vks::DescriptorPoolBuilder(device->logicalDevice)
 																.setMaxSets(10)
 																.addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, 1000)
 																.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000)

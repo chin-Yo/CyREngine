@@ -65,7 +65,7 @@ public:
         bool overlay = true;
     } settings;
     /** @brief Encapsulated physical and logical vulkan device */
-    VulkanDevice *vulkanDevice{};
+    vkb::VulkanDevice *vulkanDevice{};
     bool requiresStencil{false};
 
 protected:

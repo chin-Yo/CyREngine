@@ -5,11 +5,12 @@
 #include "Framework/Misc/ResourceCache.hpp"
 #include "Framework/Core/Debug.hpp"
 
-
+namespace vkb
+{
+	
 class VulkanDevice
 {
 public:
-	
 	VkInstance instance;
 	/** @brief Physical device representation */
 	VkPhysicalDevice physicalDevice;
@@ -51,28 +52,23 @@ public:
 	VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin = false);
 	void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandPool pool, bool free = true);
 	void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free = true);
-	
+
 	bool IsExtensionSupported(std::string extension) const;
 	bool IsEnableExtension(const char *extension) const;
-	
+
 	VkFormat getSupportedDepthFormat(bool checkSamplingSupport);
-
-
-
 
 protected:
 	vkb::ResourceCache resource_cache{*this};
 
-	
 	/** @brief List of extensions supported by the device */
 	std::vector<std::string> SupportedExtensions;
 	std::vector<std::string> EnabledExtensions;
-	
+
 	std::unique_ptr<vkb::DebugUtils> debugUtils;
 
 public:
-	
 	const vkb::DebugUtils &GetDebugUtils() const;
 	vkb::ResourceCache &get_resource_cache();
-	
 };
+}

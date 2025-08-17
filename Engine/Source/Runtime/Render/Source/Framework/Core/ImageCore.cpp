@@ -17,6 +17,7 @@
 
 #include "Framework/Core/Image.hpp"
 #include "Framework/Core/ImageView.hpp"
+#include "Framework/Core/VulkanDevice.hpp"
 
 namespace vkb
 {

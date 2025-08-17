@@ -22,9 +22,10 @@
 #include "Framework/Misc/BuilderBase.hpp"
 #include "Framework/Common/VkCommon.hpp"
 
-class VulkanDevice;
 namespace vkb
 {
+	class VulkanDevice;
+
 	class Image;
 	using ImagePtr = std::unique_ptr<Image>;
 

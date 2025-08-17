@@ -2,7 +2,6 @@
 
 #include <mutex>
 
-#include "Framework/Core/ShaderModule.hpp"
 #include "Framework/Core/PipelineLayout.hpp"
 #include "Framework/Core/DescriptorSetLayout.hpp"
 #include "Framework/Core/DescriptorPool.hpp"
@@ -15,6 +14,7 @@
 namespace vkb
 {
     class ImageView;
+    class VulkanDevice;
     /**
      * @brief Struct to hold the internal state of the Resource Cache
      *

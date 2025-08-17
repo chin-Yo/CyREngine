@@ -177,7 +177,7 @@ bool RenderSystem::InitVulkan()
     // Vulkan device creation
     // This is handled by a separate class that gets a logical device representation
     // and encapsulates functions related to a device
-    vulkanDevice = new VulkanDevice(physicalDevice);
+    vulkanDevice = new vkb::VulkanDevice(physicalDevice);
 
     result = vulkanDevice->createLogicalDevice(enabledFeatures, enabledDeviceExtensions, deviceCreatepNextChain);
     if (result != VK_SUCCESS)

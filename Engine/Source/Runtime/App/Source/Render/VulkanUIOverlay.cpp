@@ -347,14 +347,22 @@ void UIOverlay::RenderViewport()
 {
 	ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+	ImVec2 currentViewportSize = ImGui::GetContentRegionAvail();
 
-	ImGui::GetWindowDrawList()->AddRectFilled(
-		ImGui::GetCursorScreenPos(),
-		ImVec2(ImGui::GetCursorScreenPos().x + viewportPanelSize.x, ImGui::GetCursorScreenPos().y + viewportPanelSize.y),
-		IM_COL32(0, 0, 0, 255));
-	ImGui::SetCursorPos(ImVec2(viewportPanelSize.x * 0.5f - 100, viewportPanelSize.y * 0.5f));
-	ImGui::Text("This is the 3D Viewport");
+	// 检查尺寸是否有效且与上次记录的不同
+	if (currentViewportSize.x > 0.0f && currentViewportSize.y > 0.0f &&
+		(m_ViewportSize.x != currentViewportSize.x || m_ViewportSize.y != currentViewportSize.y)) 
+	{
+		// 尺寸变了！
+		m_ViewportSize = currentViewportSize;
+		m_ViewportResized = true; // 设置标志位！
+        
+		// 你可以在这里打印日志，方便调试
+		// printf("Viewport resized to: %.0f x %.0f\n", m_ViewportSize.x, m_ViewportSize.y);
+		OnViewportChange(currentViewportSize);
+	}
+	
+	ImGui::Image((ImTextureID)0,m_ViewportSize);
 
 	ImGui::End();
 }

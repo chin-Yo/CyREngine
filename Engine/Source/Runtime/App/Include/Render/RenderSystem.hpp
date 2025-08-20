@@ -19,6 +19,8 @@ private:
     void createCommandBuffers();
     void destroyCommandBuffers();
     void createUI();
+    void ViewportResize(const ImVec2& Size);
+    
     void setupFrameBuffer();
     void UpdateIconityState(bool iconified);
 
@@ -68,6 +70,14 @@ public:
     vkb::VulkanDevice *vulkanDevice{};
     bool requiresStencil{false};
 
+    
+    ImVec2 m_ViewportSize = { 0.0f, 0.0f };
+    struct OffscreenBuffer
+    {
+        
+    }m_OffscreenBuffer; 
+    bool m_ViewportResized = false;
+    
 protected:
     void getEnabledFeatures();
 

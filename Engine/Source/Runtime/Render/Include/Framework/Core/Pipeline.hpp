@@ -23,7 +23,6 @@
 class VulkanDevice;
 namespace vkb
 {
-
 	class Pipeline
 	{
 	public:

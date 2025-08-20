@@ -12,6 +12,7 @@
 #include "Framework/Core/VulkanInitializers.hpp"
 #include "Framework/Core/VulkanDebug.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
+#include "Framework/Core/VulkanglTFModel.hpp"
 #include "Misc/Paths.hpp"
 
 using namespace spv;
@@ -267,6 +268,79 @@ void RenderSystem::prepare()
     std::vector<vkb::ShaderModule*> shaders = {&SMVert,&SMFrag};
     
     vkb::PipelineLayout layout{*vulkanDevice,shaders};
+
+    vkb::PipelineState state;
+    vkb::VertexInputState vertexInputState;
+    vertexInputState.bindings.push_back(vkglTF::Vertex::inputBindingDescription(0));
+    vertexInputState.attributes = vkglTF::Vertex::inputAttributeDescriptions(0,{vkglTF::VertexComponent::Position, vkglTF::VertexComponent::Normal, vkglTF::VertexComponent::UV});
+    state.set_vertex_input_state(vertexInputState);
+
+    vkb::ColorBlendState color_blend_state;
+    vkb::ColorBlendAttachmentState blend_attachment_state;
+    color_blend_state.attachments.push_back(blend_attachment_state);
+    state.set_color_blend_state(color_blend_state);
+    state.set_pipeline_layout(layout);
+
+    std::vector<vkb::Attachment> attachments = {
+        // 颜色附件
+        {
+            VK_FORMAT_R8G8B8A8_UNORM,       // format
+            VK_SAMPLE_COUNT_1_BIT,          // samples (单采样)
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, // usage
+        },
+        // 深度附件 (可选)
+        {
+            VK_FORMAT_D32_SFLOAT,           // format
+            VK_SAMPLE_COUNT_1_BIT,          // samples (单采样)
+            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, // usage
+        }
+    };
+    std::vector<vkb::LoadStoreInfo> load_store_infos = {
+        // 颜色附件
+        {
+            VK_ATTACHMENT_LOAD_OP_CLEAR,    // 开始渲染前清除附件
+            VK_ATTACHMENT_STORE_OP_STORE    // 渲染后保存结果
+        },
+        // 深度附件
+        {
+            VK_ATTACHMENT_LOAD_OP_CLEAR,    // 开始渲染前清除深度
+            VK_ATTACHMENT_STORE_OP_DONT_CARE // 渲染后不关心深度数据(如果不需要后续使用)
+        }
+    };
+
+    std::vector<vkb::SubpassInfo> subpasses = {
+        {
+            {},                             // 无输入附件
+            {0},                            // 输出到第一个颜色附件
+            {},                             // 无颜色解析附件(不使用多重采样)
+            false,                          // 不禁用深度模板附件
+            VK_ATTACHMENT_UNUSED,           // 无深度模板解析附件
+            VK_RESOLVE_MODE_NONE,           // 无解析模式
+            "Main subpass"                  // 调试名称
+        }
+    };
+
+    vkb::RenderPass render_pass{*vulkanDevice, attachments, load_store_infos, subpasses};
+    
+    state.set_render_pass(render_pass);
+    
+    vkb::GraphicsPipeline pipeline{*vulkanDevice,VK_NULL_HANDLE, state};
+
+    
+    /*vkb::Image OffScreenImage{*vulkanDevice,vkb::ImageBuilder{ 512,512,1}
+        .with_usage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT)
+    .with_format(VK_FORMAT_R8G8B8A8_UNORM)};*/
+
+    std::vector<vkb::Image> images;
+    images.emplace_back(*vulkanDevice,vkb::ImageBuilder{ 512,512,1}
+        .with_usage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT)
+    .with_format(VK_FORMAT_R8G8B8A8_UNORM));
+    
+    vkb::RenderTarget OffScreenRT{std::move(images)};
+     
+    vkb::Framebuffer OffScreenFB{*vulkanDevice,OffScreenRT,render_pass};
+
+    
 }
 
 void RenderSystem::prepareFrame()

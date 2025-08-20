@@ -22,7 +22,3 @@ target_include_directories(ktx PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/other_include
 
 )
-
-find_package(OpenGL REQUIRED)
-find_package(Vulkan REQUIRED)
-target_link_libraries(ktx PRIVATE OpenGL::GL Vulkan::Vulkan)

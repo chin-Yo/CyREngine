@@ -146,7 +146,7 @@ namespace vkb
 
 		void clear_dirty();
 
-		template <class T>
+		template <class T>		
 		void set_constant(uint32_t constant_id, const T &data);
 
 		void set_constant(uint32_t constant_id, const std::vector<uint8_t> &data);

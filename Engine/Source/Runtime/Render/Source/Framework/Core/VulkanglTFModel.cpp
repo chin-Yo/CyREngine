@@ -15,9 +15,10 @@
 
 #define TINYGLTF_IMPLEMENTATION
 #define TINYGLTF_NO_STB_IMAGE_WRITE
+#define STB_IMAGE_IMPLEMENTATION
 
 #include "Framework/Core/VulkanglTFModel.hpp"
-
+#include "Framework/Core/VulkanDevice.hpp"
 #include "Framework/Core/VulkanTools.hpp"
 
 VkDescriptorSetLayout vkglTF::descriptorSetLayoutImage = VK_NULL_HANDLE;
@@ -72,7 +73,7 @@ void vkglTF::Texture::destroy()
     }
 }
 
-void vkglTF::Texture::fromglTfImage(tinygltf::Image &gltfimage, std::string path, VulkanDevice *device,
+void vkglTF::Texture::fromglTfImage(tinygltf::Image &gltfimage, std::string path, vkb::VulkanDevice *device,
                                     VkQueue copyQueue)
 {
     this->device = device;
@@ -524,7 +525,7 @@ void vkglTF::Primitive::setDimensions(glm::vec3 min, glm::vec3 max)
 /*
     glTF mesh
 */
-vkglTF::Mesh::Mesh(VulkanDevice *device, glm::mat4 matrix)
+vkglTF::Mesh::Mesh(vkb::VulkanDevice *device, glm::mat4 matrix)
 {
     this->device = device;
     this->uniformBlock.matrix = matrix;
@@ -1110,7 +1111,7 @@ void vkglTF::Model::loadSkins(tinygltf::Model &gltfModel)
     }
 }
 
-void vkglTF::Model::loadImages(tinygltf::Model &gltfModel, VulkanDevice *device, VkQueue transferQueue)
+void vkglTF::Model::loadImages(tinygltf::Model &gltfModel, vkb::VulkanDevice *device, VkQueue transferQueue)
 {
     for (tinygltf::Image &image : gltfModel.images)
     {
@@ -1331,7 +1332,7 @@ void vkglTF::Model::loadAnimations(tinygltf::Model &gltfModel)
     }
 }
 
-void vkglTF::Model::loadFromFile(std::string filename, VulkanDevice *device, VkQueue transferQueue,
+void vkglTF::Model::loadFromFile(std::string filename, vkb::VulkanDevice *device, VkQueue transferQueue,
                                  uint32_t fileLoadingFlags, float scale)
 {
     tinygltf::Model gltfModel;

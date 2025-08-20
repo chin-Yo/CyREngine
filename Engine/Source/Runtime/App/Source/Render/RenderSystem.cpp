@@ -6,6 +6,7 @@
 #include <backends/imgui_impl_vulkan.h>
 
 #include "Framework/Core/Image.hpp"
+#include "Framework/Core/Sampler.hpp"
 #include "Framework/Misc/SpirvReflection.hpp"
 #include "Misc/FileLoader.hpp"
 #include "Framework/Core/VulkanTools.hpp"
@@ -88,6 +89,17 @@ void RenderSystem::createUI()
                              .build());
 
     GlobalUI->InitImGui(instance, UIRenderPass.value(), GraphicsQueue, swapChain.images.size(), swapChain.images.size());
+    GlobalUI->OnViewportChange.append([this](const ImVec2& Size)
+    {
+        this->ViewportResize(Size);
+    });
+}
+
+void RenderSystem::ViewportResize(const ImVec2& Size)
+{
+    vkb::Sampler OffScreenSampler{*vulkanDevice,vks::initializers::samplerCreateInfo()};
+    
+    //ImGui_ImplVulkan_AddTexture()
 }
 
 void RenderSystem::setupFrameBuffer()
@@ -334,12 +346,17 @@ void RenderSystem::prepare()
     std::vector<vkb::Image> images;
     images.emplace_back(*vulkanDevice,vkb::ImageBuilder{ 512,512,1}
         .with_usage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT)
-    .with_format(VK_FORMAT_R8G8B8A8_UNORM));
+        .with_format(VK_FORMAT_R8G8B8A8_UNORM));
+    images.emplace_back(*vulkanDevice,vkb::ImageBuilder{ 512,512,1}
+        .with_usage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+        .with_format(VK_FORMAT_D32_SFLOAT));
+    
     
     vkb::RenderTarget OffScreenRT{std::move(images)};
      
     vkb::Framebuffer OffScreenFB{*vulkanDevice,OffScreenRT,render_pass};
 
+    auto imageView = OffScreenRT.get_views()[0].GetHandle();
     
 }
 

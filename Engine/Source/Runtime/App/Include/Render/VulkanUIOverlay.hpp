@@ -10,6 +10,8 @@
 #include "imgui.h"
 #include "Framework/Core/DescriptorPool.hpp"
 #include "Framework/Core/DescriptorSetLayout.hpp"
+#include "eventpp/callbacklist.h"
+
 
 class UIOverlay
 {
@@ -32,6 +34,9 @@ public:
 
     void freeResources();
 
+    eventpp::CallbackList<void(const ImVec2& PortSize)> OnViewportChange;
+    ImVec2 m_ViewportSize{0, 0};
+    bool m_ViewportResized = false;
 protected:
     void RenderMenuBar();
     void RenderHierarchy();

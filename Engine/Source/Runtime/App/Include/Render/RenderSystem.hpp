@@ -19,6 +19,8 @@ private:
     void createCommandBuffers();
     void destroyCommandBuffers();
     void createUI();
+    void ViewportResize(const ImVec2& Size);
+    
     void setupFrameBuffer();
     void UpdateIconityState(bool iconified);
 

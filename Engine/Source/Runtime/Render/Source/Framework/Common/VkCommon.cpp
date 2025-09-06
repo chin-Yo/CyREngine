@@ -7,14 +7,14 @@ namespace vkb
     bool is_depth_only_format(VkFormat format)
     {
         return format == VK_FORMAT_D16_UNORM ||
-            format == VK_FORMAT_D32_SFLOAT;
+               format == VK_FORMAT_D32_SFLOAT;
     }
 
     bool is_depth_stencil_format(VkFormat format)
     {
         return format == VK_FORMAT_D16_UNORM_S8_UINT ||
-            format == VK_FORMAT_D24_UNORM_S8_UINT ||
-            format == VK_FORMAT_D32_SFLOAT_S8_UINT;
+               format == VK_FORMAT_D24_UNORM_S8_UINT ||
+               format == VK_FORMAT_D32_SFLOAT_S8_UINT;
     }
 
     bool is_depth_format(VkFormat format)
@@ -22,13 +22,12 @@ namespace vkb
         return is_depth_only_format(format) || is_depth_stencil_format(format);
     }
 
-
     VkFormat get_suitable_depth_format(VkPhysicalDevice physical_device, bool depth_only,
-                                       const std::vector<VkFormat>& depth_format_priority_list)
+                                       const std::vector<VkFormat> &depth_format_priority_list)
     {
         VkFormat depth_format{VK_FORMAT_UNDEFINED};
 
-        for (auto& format : depth_format_priority_list)
+        for (auto &format : depth_format_priority_list)
         {
             if (depth_only && !is_depth_only_format(format))
             {
@@ -56,9 +55,9 @@ namespace vkb
     }
 
     VkFormat choose_blendable_format(VkPhysicalDevice physical_device,
-                                     const std::vector<VkFormat>& format_priority_list)
+                                     const std::vector<VkFormat> &format_priority_list)
     {
-        for (const auto& format : format_priority_list)
+        for (const auto &format : format_priority_list)
         {
             VkFormatProperties properties;
             vkGetPhysicalDeviceFormatProperties(physical_device, format, &properties);
@@ -71,8 +70,8 @@ namespace vkb
         throw std::runtime_error("No suitable blendable format could be determined");
     }
 
-    void make_filters_valid(VkPhysicalDevice physical_device, VkFormat format, VkFilter* filter,
-                            VkSamplerMipmapMode* mipmapMode)
+    void make_filters_valid(VkPhysicalDevice physical_device, VkFormat format, VkFilter *filter,
+                            VkSamplerMipmapMode *mipmapMode)
     {
         // Not all formats support linear filtering, so we need to adjust them if they don't
         if (*filter == VK_FILTER_NEAREST && (mipmapMode == nullptr || *mipmapMode == VK_SAMPLER_MIPMAP_MODE_NEAREST))
@@ -96,14 +95,14 @@ namespace vkb
     bool is_dynamic_buffer_descriptor_type(VkDescriptorType descriptor_type)
     {
         return descriptor_type == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC ||
-            descriptor_type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+               descriptor_type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     }
 
     bool is_buffer_descriptor_type(VkDescriptorType descriptor_type)
     {
         return descriptor_type == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER ||
-            descriptor_type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER ||
-            is_dynamic_buffer_descriptor_type(descriptor_type);
+               descriptor_type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER ||
+               is_dynamic_buffer_descriptor_type(descriptor_type);
     }
 
     int32_t get_bits_per_pixel(VkFormat format)
@@ -289,8 +288,7 @@ namespace vkb
             VK_IMAGE_COMPRESSION_FIXED_RATE_17BPC_BIT_EXT, VK_IMAGE_COMPRESSION_FIXED_RATE_18BPC_BIT_EXT,
             VK_IMAGE_COMPRESSION_FIXED_RATE_19BPC_BIT_EXT, VK_IMAGE_COMPRESSION_FIXED_RATE_20BPC_BIT_EXT,
             VK_IMAGE_COMPRESSION_FIXED_RATE_21BPC_BIT_EXT, VK_IMAGE_COMPRESSION_FIXED_RATE_22BPC_BIT_EXT,
-            VK_IMAGE_COMPRESSION_FIXED_RATE_23BPC_BIT_EXT, VK_IMAGE_COMPRESSION_FIXED_RATE_24BPC_BIT_EXT
-        };
+            VK_IMAGE_COMPRESSION_FIXED_RATE_23BPC_BIT_EXT, VK_IMAGE_COMPRESSION_FIXED_RATE_24BPC_BIT_EXT};
 
         std::vector<VkImageCompressionFixedRateFlagBitsEXT> flags_vector;
 
@@ -306,11 +304,10 @@ namespace vkb
     }
 
     VkImageCompressionPropertiesEXT query_supported_fixed_rate_compression(
-        VkPhysicalDevice gpu, const VkImageCreateInfo& create_info)
+        VkPhysicalDevice gpu, const VkImageCreateInfo &create_info)
     {
         VkImageCompressionPropertiesEXT supported_compression_properties{
-            VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_PROPERTIES_EXT
-        };
+            VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_PROPERTIES_EXT};
 
         VkImageCompressionControlEXT compression_control{VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_CONTROL_EXT};
         compression_control.flags = VK_IMAGE_COMPRESSION_FIXED_RATE_DEFAULT_EXT;
@@ -344,5 +341,164 @@ namespace vkb
         vkGetImageSubresourceLayout2EXT(device, image, &image_subresource, &subresource_layout);
 
         return compression_properties;
+    }
+
+    VkAccessFlags getAccessFlags(VkImageLayout layout)
+    {
+        switch (layout)
+        {
+        case VK_IMAGE_LAYOUT_UNDEFINED:
+        case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+            return 0;
+        case VK_IMAGE_LAYOUT_PREINITIALIZED:
+            return VK_ACCESS_HOST_WRITE_BIT;
+        case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+            return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+            return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
+            return VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR;
+        case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+            return VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+        case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+            return VK_ACCESS_TRANSFER_READ_BIT;
+        case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+            return VK_ACCESS_TRANSFER_WRITE_BIT;
+        case VK_IMAGE_LAYOUT_GENERAL:
+            assert(false && "Don't know how to get a meaningful VkAccessFlags for VK_IMAGE_LAYOUT_GENERAL! Don't use it!");
+            return 0;
+        default:
+            assert(false);
+            return 0;
+        }
+    }
+
+    VkPipelineStageFlags getPipelineStageFlags(VkImageLayout layout)
+    {
+        switch (layout)
+        {
+        case VK_IMAGE_LAYOUT_UNDEFINED:
+            return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        case VK_IMAGE_LAYOUT_PREINITIALIZED:
+            return VK_PIPELINE_STAGE_HOST_BIT;
+        case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+            return VK_PIPELINE_STAGE_TRANSFER_BIT;
+        case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+            return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+            return VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
+            return VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+        case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+            return VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+            return VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+        case VK_IMAGE_LAYOUT_GENERAL:
+            assert(false && "Don't know how to get a meaningful VkPipelineStageFlags for VK_IMAGE_LAYOUT_GENERAL! Don't use it!");
+            return 0;
+        default:
+            assert(false);
+            return 0;
+        }
+    }
+
+    // Create an image memory barrier for changing the layout of
+    // an image and put it into an active command buffer
+    // See chapter 12.4 "Image Layout" for details
+
+    void image_layout_transition(VkCommandBuffer command_buffer,
+                                 VkImage image,
+                                 VkPipelineStageFlags src_stage_mask,
+                                 VkPipelineStageFlags dst_stage_mask,
+                                 VkAccessFlags src_access_mask,
+                                 VkAccessFlags dst_access_mask,
+                                 VkImageLayout old_layout,
+                                 VkImageLayout new_layout,
+                                 VkImageSubresourceRange const &subresource_range)
+    {
+        // Create an image barrier object
+        VkImageMemoryBarrier image_memory_barrier{};
+        image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        image_memory_barrier.srcAccessMask = src_access_mask;
+        image_memory_barrier.dstAccessMask = dst_access_mask;
+        image_memory_barrier.oldLayout = old_layout;
+        image_memory_barrier.newLayout = new_layout;
+        image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        image_memory_barrier.image = image;
+        image_memory_barrier.subresourceRange = subresource_range;
+
+        // Put barrier inside setup command buffer
+        vkCmdPipelineBarrier(command_buffer, src_stage_mask, dst_stage_mask, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+    }
+
+    void image_layout_transition(VkCommandBuffer command_buffer,
+                                 VkImage image,
+                                 VkImageLayout old_layout,
+                                 VkImageLayout new_layout,
+                                 VkImageSubresourceRange const &subresource_range)
+    {
+        VkPipelineStageFlags src_stage_mask = getPipelineStageFlags(old_layout);
+        VkPipelineStageFlags dst_stage_mask = getPipelineStageFlags(new_layout);
+        VkAccessFlags src_access_mask = getAccessFlags(old_layout);
+        VkAccessFlags dst_access_mask = getAccessFlags(new_layout);
+
+        image_layout_transition(command_buffer, image, src_stage_mask, dst_stage_mask, src_access_mask, dst_access_mask, old_layout, new_layout, subresource_range);
+    }
+
+    // Fixed sub resource on first mip level and layer
+    void image_layout_transition(VkCommandBuffer command_buffer,
+                                 VkImage image,
+                                 VkImageLayout old_layout,
+                                 VkImageLayout new_layout)
+    {
+        VkImageSubresourceRange subresource_range = {};
+        subresource_range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        subresource_range.baseMipLevel = 0;
+        subresource_range.levelCount = 1;
+        subresource_range.baseArrayLayer = 0;
+        subresource_range.layerCount = 1;
+        image_layout_transition(command_buffer, image, old_layout, new_layout, subresource_range);
+    }
+
+    void image_layout_transition(VkCommandBuffer command_buffer,
+                                 std::vector<std::pair<VkImage, VkImageSubresourceRange>> const &imagesAndRanges,
+                                 VkImageLayout old_layout,
+                                 VkImageLayout new_layout)
+    {
+        VkPipelineStageFlags src_stage_mask = getPipelineStageFlags(old_layout);
+        VkPipelineStageFlags dst_stage_mask = getPipelineStageFlags(new_layout);
+        VkAccessFlags src_access_mask = getAccessFlags(old_layout);
+        VkAccessFlags dst_access_mask = getAccessFlags(new_layout);
+
+        // Create image barrier objects
+        std::vector<VkImageMemoryBarrier> image_memory_barriers;
+        image_memory_barriers.reserve(imagesAndRanges.size());
+        for (size_t i = 0; i < imagesAndRanges.size(); i++)
+        {
+            image_memory_barriers.emplace_back(VkImageMemoryBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                                                                    nullptr,
+                                                                    src_access_mask,
+                                                                    dst_access_mask,
+                                                                    old_layout,
+                                                                    new_layout,
+                                                                    VK_QUEUE_FAMILY_IGNORED,
+                                                                    VK_QUEUE_FAMILY_IGNORED,
+                                                                    imagesAndRanges[i].first,
+                                                                    imagesAndRanges[i].second});
+        }
+
+        // Put barriers inside setup command buffer
+        vkCmdPipelineBarrier(command_buffer,
+                             src_stage_mask,
+                             dst_stage_mask,
+                             0,
+                             0,
+                             nullptr,
+                             0,
+                             nullptr,
+                             static_cast<uint32_t>(image_memory_barriers.size()),
+                             image_memory_barriers.data());
     }
 }

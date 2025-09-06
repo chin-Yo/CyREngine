@@ -75,5 +75,7 @@ namespace vkb
 
 		// The different descriptor set layouts for this pipeline layout
 		std::vector<DescriptorSetLayout *> descriptor_set_layouts;
+
+		
 	};
 } // namespace vkb

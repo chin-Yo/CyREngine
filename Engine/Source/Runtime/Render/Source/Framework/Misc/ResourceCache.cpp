@@ -16,7 +16,7 @@
  */
 
 #include "Framework/Misc/ResourceCache.hpp"
-
+#include "Framework/Rendering/RenderTarget.hpp"
 #include "Framework/Common/ResourceCaching.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
 #include "Logging/Logger.hpp"

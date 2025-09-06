@@ -19,9 +19,11 @@ UIOverlay::UIOverlay(vkb::VulkanDevice *device) : descriptorPool(vks::Descriptor
 																.addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000)
 																.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000)
 																.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000)
+																.setPoolFlags(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
 																.build())
 {
 	this->vulkanDevice = device;
+	OffScreenSampler = new vkb::Sampler({*vulkanDevice,vks::initializers::samplerCreateInfo()});
 }
 
 UIOverlay::~UIOverlay()
@@ -86,7 +88,7 @@ bool UIOverlay::update()
 	return true;
 }
 
-void UIOverlay::draw()
+void UIOverlay::draw(bool off)
 {
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -97,7 +99,7 @@ void UIOverlay::draw()
 	RenderInspector();
 	RenderProjectBrowser();
 	RenderConsole();
-	RenderViewport(); // 3D Scene
+	RenderViewport(off); // 3D Scene
 
 	ImGui::Render();
 }
@@ -343,8 +345,9 @@ void UIOverlay::RenderConsole()
 	ImGui::End();
 }
 
-void UIOverlay::RenderViewport()
+void UIOverlay::RenderViewport(bool off)
 {
+	ImGui::SetNextWindowSize(ImVec2(500, 600), ImGuiCond_Once);
 	ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
 	ImVec2 currentViewportSize = ImGui::GetContentRegionAvail();
@@ -361,8 +364,8 @@ void UIOverlay::RenderViewport()
 		// printf("Viewport resized to: %.0f x %.0f\n", m_ViewportSize.x, m_ViewportSize.y);
 		OnViewportChange(currentViewportSize);
 	}
-	
-	ImGui::Image((ImTextureID)0,m_ViewportSize);
+	if (m_DescriptorSet != nullptr && off)
+		ImGui::Image(m_DescriptorSet,m_ViewportSize);
 
 	ImGui::End();
 }

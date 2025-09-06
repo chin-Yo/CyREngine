@@ -17,6 +17,7 @@
 
 #include "Framework/Core/QueryPool.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
+#include "Framework/Core/VulkanTools.hpp"
 
 namespace vkb
 {

@@ -11,6 +11,8 @@
 #include "Framework/Core/DescriptorPool.hpp"
 #include "Framework/Core/DescriptorSetLayout.hpp"
 #include "eventpp/callbacklist.h"
+#include "Framework/Core/Sampler.hpp"
+#include "Framework/Core/VulkanInitializers.hpp"
 
 
 class UIOverlay
@@ -29,7 +31,7 @@ public:
     void prepareResources();
 
     bool update();
-    void draw();
+    void draw(bool Off);
     void resize(uint32_t width, uint32_t height);
 
     void freeResources();
@@ -37,11 +39,13 @@ public:
     eventpp::CallbackList<void(const ImVec2& PortSize)> OnViewportChange;
     ImVec2 m_ViewportSize{0, 0};
     bool m_ViewportResized = false;
+    vkb::Sampler *OffScreenSampler = nullptr;
+    VkDescriptorSet m_DescriptorSet = VK_NULL_HANDLE;
 protected:
     void RenderMenuBar();
     void RenderHierarchy();
     void RenderInspector();
     void RenderProjectBrowser();
     void RenderConsole();
-    void RenderViewport();
+    void RenderViewport(bool off);
 };

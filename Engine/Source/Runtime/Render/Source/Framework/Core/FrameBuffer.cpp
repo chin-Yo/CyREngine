@@ -19,6 +19,7 @@
 
 #include "Framework/Core/RenderPass.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
+#include "Framework/Rendering/RenderTarget.hpp"
 
 namespace vkb
 {

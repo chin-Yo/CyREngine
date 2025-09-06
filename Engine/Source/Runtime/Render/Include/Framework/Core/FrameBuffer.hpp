@@ -17,11 +17,14 @@
 
 #pragma once
 
-#include "Framework/Rendering/RenderTarget.hpp"
+#include <volk.h>
 
 namespace vkb
 {
-
+	class RenderPass;
+	class RenderTarget;
+	class VulkanDevice;
+	
 	class Framebuffer
 	{
 	public:

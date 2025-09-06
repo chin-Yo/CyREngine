@@ -1,5 +1,8 @@
 cmake_policy(SET CMP0079 NEW)  # 允许从外部目录链接目标
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 set(third_party_folder "ThirdParty")
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
@@ -72,7 +75,6 @@ if(NOT TARGET glm::glm)
 
     add_subdirectory(glm)
     set_target_properties(glm PROPERTIES FOLDER ${third_party_folder}/glm)
-    message(STATUS "GLM configured: C++20=${GLM_ENABLE_CXX_20}, AVX2=${GLM_ENABLE_SIMD_AVX2}")
 endif()
 
 # volk

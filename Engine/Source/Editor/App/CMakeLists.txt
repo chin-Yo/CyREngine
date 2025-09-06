@@ -16,7 +16,7 @@ file(GLOB_RECURSE LIB_HEADERS
 )
 
 add_executable(${TARGET_NAME} ${LIB_SOURCES} ${LIB_HEADERS})
-
+target_compile_features(${TARGET_NAME} PRIVATE cxx_std_17)
 target_include_directories(${TARGET_NAME} PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/Include
     ${RUNTIME_DIR}

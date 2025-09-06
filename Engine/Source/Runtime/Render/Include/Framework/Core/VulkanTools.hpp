@@ -22,6 +22,8 @@
 #include <stdexcept>
 #include <fstream>
 #include <algorithm>
+#include "Logging/Logger.hpp"
+
 #if defined(_WIN32)
 #include <windows.h>
 #include <fcntl.h>
@@ -53,7 +55,7 @@
 		VkResult res = (f);                                                                                                                   \
 		if (res != VK_SUCCESS)                                                                                                                \
 		{                                                                                                                                     \
-			std::cout << "Fatal : VkResult is \"" << vks::tools::errorString(res) << "\" in " << __FILE__ << " at line " << __LINE__ << "\n"; \
+			LOG_ERROR_P("Fatal : VkResult is {}", vks::tools::errorString(res))															  \
 			assert(res == VK_SUCCESS);                                                                                                        \
 		}                                                                                                                                     \
 	}

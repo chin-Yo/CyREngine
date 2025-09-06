@@ -19,12 +19,16 @@
 #include <ktxvulkan.h>
 
 #include "VulkanBuffer.hpp"
-#include "VulkanDevice.hpp"
 #include "VulkanTools.hpp"
 
 #if defined(__ANDROID__)
 #include <android/asset_manager.h>
 #endif
+
+namespace vkb
+{
+    class VulkanDevice;
+}
 
 namespace vks
 {

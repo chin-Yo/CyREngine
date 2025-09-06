@@ -15,7 +15,8 @@
 
 namespace vkb
 {
-    class VulkanDevice;
+	class ImageView;
+	class VulkanDevice;
     /**
      * @brief Struct to hold the internal state of the Resource Cache
      *

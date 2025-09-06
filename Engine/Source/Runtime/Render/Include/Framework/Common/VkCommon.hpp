@@ -17,8 +17,8 @@ template <typename T>
 constexpr VkObjectType GetVkObjectType();
 
 #define DEFINE_VK_OBJECT_TYPE(Type, ObjectType) \
-	template <>                                 \
-	constexpr VkObjectType GetVkObjectType<Type>() { return ObjectType; }
+    template <>                                 \
+    constexpr VkObjectType GetVkObjectType<Type>() { return ObjectType; }
 
 DEFINE_VK_OBJECT_TYPE(VkInstance, VK_OBJECT_TYPE_INSTANCE)
 DEFINE_VK_OBJECT_TYPE(VkPhysicalDevice, VK_OBJECT_TYPE_PHYSICAL_DEVICE)
@@ -88,11 +88,10 @@ namespace vkb
      */
     VkFormat get_suitable_depth_format(VkPhysicalDevice physical_device,
                                        bool depth_only = false,
-                                       const std::vector<VkFormat>& depth_format_priority_list = {
+                                       const std::vector<VkFormat> &depth_format_priority_list = {
                                            VK_FORMAT_D32_SFLOAT,
                                            VK_FORMAT_D24_UNORM_S8_UINT,
-                                           VK_FORMAT_D16_UNORM
-                                       });
+                                           VK_FORMAT_D16_UNORM});
 
     /**
      * @brief Helper function to pick a blendable format from a priority ordered list
@@ -101,7 +100,7 @@ namespace vkb
      * @return The selected format
      */
     VkFormat choose_blendable_format(VkPhysicalDevice physical_device,
-                                     const std::vector<VkFormat>& format_priority_list);
+                                     const std::vector<VkFormat> &format_priority_list);
 
     /**
      * @brief Helper function to check support for linear filtering and adjust its parameters if required
@@ -110,8 +109,8 @@ namespace vkb
      * @param filter The preferred filter to adjust
      * @param mipmapMode (Optional) The preferred mipmap mode to adjust
      */
-    void make_filters_valid(VkPhysicalDevice physical_device, VkFormat format, VkFilter* filter,
-                            VkSamplerMipmapMode* mipmapMode = nullptr);
+    void make_filters_valid(VkPhysicalDevice physical_device, VkFormat format, VkFilter *filter,
+                            VkSamplerMipmapMode *mipmapMode = nullptr);
 
     /**
      * @brief Helper function to determine if a Vulkan descriptor type is a dynamic storage buffer or dynamic uniform buffer.
@@ -141,7 +140,76 @@ namespace vkb
         VkImageCompressionFixedRateFlagsEXT flags);
 
     VkImageCompressionPropertiesEXT query_supported_fixed_rate_compression(
-        VkPhysicalDevice gpu, const VkImageCreateInfo& create_info);
+        VkPhysicalDevice gpu, const VkImageCreateInfo &create_info);
 
     VkImageCompressionPropertiesEXT query_applied_compression(VkDevice device, VkImage image);
+
+    /**
+     * @brief Put an image memory barrier for a layout transition of an image, using explicitly give transition parameters.
+     * @param command_buffer The VkCommandBuffer to record the barrier.
+     * @param image The VkImage to transition.
+     * @param src_stage_mask The VkPipelineStageFlags to use as source.
+     * @param dst_stage_mask The VkPipelineStageFlags to use as destination.
+     * @param src_access_mask The VkAccessFlags to use as source.
+     * @param dst_access_mask The VkAccessFlags to use as destination.
+     * @param old_layout The VkImageLayout to transition from.
+     * @param new_layout The VkImageLayout to transition to.
+     * @param subresource_range The VkImageSubresourceRange to use with the transition.
+     */
+    void image_layout_transition(VkCommandBuffer command_buffer,
+                                 VkImage image,
+                                 VkPipelineStageFlags src_stage_mask,
+                                 VkPipelineStageFlags dst_stage_mask,
+                                 VkAccessFlags src_access_mask,
+                                 VkAccessFlags dst_access_mask,
+                                 VkImageLayout old_layout,
+                                 VkImageLayout new_layout,
+                                 VkImageSubresourceRange const &subresource_range);
+
+    /**
+     * @brief Put an image memory barrier for a layout transition of an image, on a given subresource range.
+     *
+     * The src_stage_mask, dst_stage_mask, src_access_mask, and dst_access_mask used are determined from old_layout and new_layout.
+     *
+     * @param command_buffer The VkCommandBuffer to record the barrier.
+     * @param image The VkImage to transition.
+     * @param old_layout The VkImageLayout to transition from.
+     * @param new_layout The VkImageLayout to transition to.
+     * @param subresource_range The VkImageSubresourceRange to use with the transition.
+     */
+    void image_layout_transition(VkCommandBuffer command_buffer,
+                                 VkImage image,
+                                 VkImageLayout old_layout,
+                                 VkImageLayout new_layout,
+                                 VkImageSubresourceRange const &subresource_range);
+
+    /**
+     * @brief Put an image memory barrier for a layout transition of an image, on a fixed subresource with first mip level and layer.
+     *
+     * The src_stage_mask, dst_stage_mask, src_access_mask, and dst_access_mask used are determined from old_layout and new_layout.
+     *
+     * @param command_buffer The VkCommandBuffer to record the barrier.
+     * @param image The VkImage to transition.
+     * @param old_layout The VkImageLayout to transition from.
+     * @param new_layout The VkImageLayout to transition to.
+     */
+    void image_layout_transition(VkCommandBuffer command_buffer,
+                                 VkImage image,
+                                 VkImageLayout old_layout,
+                                 VkImageLayout new_layout);
+
+    /**
+     * @brief Put an image memory barrier for a layout transition of a vector of images, with a given subresource range per image.
+     *
+     * The src_stage_mask, dst_stage_mask, src_access_mask, and dst_access_mask used are determined from old_layout and new_layout.
+     *
+     * @param command_buffer The VkCommandBuffer to record the barrier.
+     * @param imagesAndRanges The images to transition, with accompanying subresource ranges.
+     * @param old_layout The VkImageLayout to transition from.
+     * @param new_layout The VkImageLayout to transition to.
+     */
+    void image_layout_transition(VkCommandBuffer command_buffer,
+                                 std::vector<std::pair<VkImage, VkImageSubresourceRange>> const &imagesAndRanges,
+                                 VkImageLayout old_layout,
+                                 VkImageLayout new_layout);
 }

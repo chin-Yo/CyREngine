@@ -6,6 +6,7 @@
 #include <backends/imgui_impl_vulkan.h>
 
 #include "Framework/Core/Image.hpp"
+#include "Framework/Core/Buffer.hpp"
 #include "Framework/Core/Sampler.hpp"
 #include "Framework/Misc/SpirvReflection.hpp"
 #include "Misc/FileLoader.hpp"
@@ -14,7 +15,9 @@
 #include "Framework/Core/VulkanDebug.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
 #include "Framework/Core/VulkanglTFModel.hpp"
+#include "Framework/Rendering/RenderTarget.hpp"
 #include "Misc/Paths.hpp"
+
 
 using namespace spv;
 using namespace SPIRV_CROSS_NAMESPACE;
@@ -65,9 +68,11 @@ void RenderSystem::createCommandBuffers()
 {
     // Create one command buffer for each swap chain image
     drawCmdBuffers.resize(swapChain.images.size());
+    OffScreenDrawCmdBuffers.resize(swapChain.images.size());
     VkCommandBufferAllocateInfo cmdBufAllocateInfo = vks::initializers::commandBufferAllocateInfo(
         cmdPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, static_cast<uint32_t>(drawCmdBuffers.size()));
     VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, drawCmdBuffers.data()));
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, OffScreenDrawCmdBuffers.data()));
 }
 void RenderSystem::destroyCommandBuffers()
 {
@@ -97,9 +102,35 @@ void RenderSystem::createUI()
 
 void RenderSystem::ViewportResize(const ImVec2& Size)
 {
-    vkb::Sampler OffScreenSampler{*vulkanDevice,vks::initializers::samplerCreateInfo()};
+    OffScreenSize = Size;
+    if (OffScreenSize.x < 256 && OffScreenSize.y < 256)
+    {
+        return;
+    }
+    delete OffScreenRT;
+    delete OffScreenFB;
+    OffScreenRT = nullptr;
+    OffScreenFB = nullptr;
     
-    //ImGui_ImplVulkan_AddTexture()
+    vkDeviceWaitIdle(vulkanDevice->logicalDevice);
+    std::vector<vkb::Image> images;
+    images.emplace_back(*vulkanDevice,vkb::ImageBuilder{ static_cast<unsigned int>(OffScreenSize.x),static_cast<unsigned int>(OffScreenSize.y),1}
+        .with_usage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT)
+        .with_format(VK_FORMAT_R8G8B8A8_UNORM));
+    images.emplace_back(*vulkanDevice,vkb::ImageBuilder{ static_cast<unsigned int>(OffScreenSize.x),static_cast<unsigned int>(OffScreenSize.y),1}
+        .with_usage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+        .with_format(VK_FORMAT_D32_SFLOAT));
+    
+    OffScreenRT = new vkb::RenderTarget{std::move(images)};
+    OffScreenFB = new vkb::Framebuffer{*vulkanDevice,*OffScreenRT,*render_pass};
+    
+    if (GlobalUI->m_DescriptorSet != VK_NULL_HANDLE)
+    {
+        ImGui_ImplVulkan_RemoveTexture(GlobalUI->m_DescriptorSet);
+        GlobalUI->m_DescriptorSet = VK_NULL_HANDLE;
+    }
+    GlobalUI->m_DescriptorSet = ImGui_ImplVulkan_AddTexture(GlobalUI->OffScreenSampler->GetHandle(),OffScreenRT->get_views()[0].GetHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    OffScreenResourcesReady = true;
 }
 
 void RenderSystem::setupFrameBuffer()
@@ -125,6 +156,17 @@ void RenderSystem::setupFrameBuffer()
 void RenderSystem::UpdateIconityState(bool iconified)
 {
     IsIconity = iconified;
+}
+
+void RenderSystem::UpdateUnifrom()
+{
+    Scene.view = camera.GetViewMatrix();
+    Scene.projection = glm::perspective(glm::radians(camera.Fov), (float)OffScreenSize.x / (float)OffScreenSize.y, 0.1f, 100.0f);
+    Scene.cameraPos = camera.Position;
+    uboScene->update(&Scene, sizeof(UboScene));
+    uboLight->update(&Light, sizeof(UboLight));
+    uboMaterial->update(&Material, sizeof(UboMaterial));
+    
 }
 
 void RenderSystem::getEnabledFeatures()
@@ -255,10 +297,11 @@ void RenderSystem::prepare()
     setupFrameBuffer();
     
     prepared = true;
+    const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
 
     auto spvfrag = FileLoader::ReadShaderBinaryU32(Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.frag.spv"));
     auto spvvert = FileLoader::ReadShaderBinaryU32(Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.vert.spv"));
-
+    Simple.loadFromFile(Paths::GetAssetFullPath("Models/retroufo.gltf"),vulkanDevice,GraphicsQueue,glTFLoadingFlags);
     //Spirv::SpirvReflection::reflect_shader(Paths::GetShaderFullPath("Default/BlinnPhong/BlinnPhong.frag.spv"));
     /*vkb::SPIRVReflection spirvReflection;
     std::vector<vkb::ShaderResource> vertresources;
@@ -279,8 +322,49 @@ void RenderSystem::prepare()
 
     std::vector<vkb::ShaderModule*> shaders = {&SMVert,&SMFrag};
     
-    vkb::PipelineLayout layout{*vulkanDevice,shaders};
+    layout = new vkb::PipelineLayout{*vulkanDevice,shaders};
+    
+    Pool1 = new vkb::DescriptorPool{*vulkanDevice,layout->get_descriptor_set_layout(0)};
+    Pool2 = new vkb::DescriptorPool{*vulkanDevice,layout->get_descriptor_set_layout(1)};
+    Pool3 = new vkb::DescriptorPool{*vulkanDevice,layout->get_descriptor_set_layout(2)};
+    
+    uboScene = new vkb::Buffer(*vulkanDevice,sizeof(UboScene)
+    ,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,VMA_MEMORY_USAGE_CPU_TO_GPU ,VMA_ALLOCATION_CREATE_MAPPED_BIT |
+                                            VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT);
 
+    uboLight = new vkb::Buffer(*vulkanDevice,sizeof(UboLight)
+    ,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,VMA_MEMORY_USAGE_CPU_TO_GPU ,VMA_ALLOCATION_CREATE_MAPPED_BIT |
+                                            VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT);
+
+    uboMaterial = new vkb::Buffer(*vulkanDevice,sizeof(UboMaterial)
+    ,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,VMA_MEMORY_USAGE_CPU_TO_GPU,VMA_ALLOCATION_CREATE_MAPPED_BIT |
+                                            VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT );
+
+    
+    VkDescriptorBufferInfo bufferInfo = {};
+    bufferInfo.buffer = uboScene->GetHandle();
+    bufferInfo.offset = 0;
+    bufferInfo.range = sizeof(UboScene);   
+    BindingMap<VkDescriptorBufferInfo> SceneInfo{};
+    SceneInfo[0][0] = bufferInfo;
+    DescriptorSet1 = new vkb::DescriptorSet{*vulkanDevice,layout->get_descriptor_set_layout(0),*Pool1,SceneInfo};
+    DescriptorSet1->update({0});
+    
+    bufferInfo.buffer = uboLight->GetHandle();
+    bufferInfo.range = sizeof(UboLight);
+    BindingMap<VkDescriptorBufferInfo> LightInfo{};
+    LightInfo[0][0] = bufferInfo;
+    DescriptorSet2 = new vkb::DescriptorSet{*vulkanDevice,layout->get_descriptor_set_layout(1),*Pool2,LightInfo};
+    DescriptorSet2->update({0});
+
+    bufferInfo.buffer = uboMaterial->GetHandle();
+    bufferInfo.range = sizeof(UboMaterial);
+    BindingMap<VkDescriptorBufferInfo> MaterialInfo{};
+    MaterialInfo[0][0] = bufferInfo;
+    DescriptorSet3 = new vkb::DescriptorSet{*vulkanDevice,layout->get_descriptor_set_layout(2),*Pool3,MaterialInfo};
+    DescriptorSet3->update({0});
+
+    
     vkb::PipelineState state;
     vkb::VertexInputState vertexInputState;
     vertexInputState.bindings.push_back(vkglTF::Vertex::inputBindingDescription(0));
@@ -291,14 +375,14 @@ void RenderSystem::prepare()
     vkb::ColorBlendAttachmentState blend_attachment_state;
     color_blend_state.attachments.push_back(blend_attachment_state);
     state.set_color_blend_state(color_blend_state);
-    state.set_pipeline_layout(layout);
+    state.set_pipeline_layout(*layout);
 
     std::vector<vkb::Attachment> attachments = {
         // 颜色附件
         {
             VK_FORMAT_R8G8B8A8_UNORM,       // format
             VK_SAMPLE_COUNT_1_BIT,          // samples (单采样)
-            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, // usage
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT// usage
         },
         // 深度附件 (可选)
         {
@@ -331,12 +415,12 @@ void RenderSystem::prepare()
             "Main subpass"                  // 调试名称
         }
     };
-
-    vkb::RenderPass render_pass{*vulkanDevice, attachments, load_store_infos, subpasses};
     
-    state.set_render_pass(render_pass);
+    render_pass = new vkb::RenderPass{*vulkanDevice, attachments, load_store_infos, subpasses};
     
-    vkb::GraphicsPipeline pipeline{*vulkanDevice,VK_NULL_HANDLE, state};
+    state.set_render_pass(*render_pass);
+    
+    pipeline = new vkb::GraphicsPipeline{*vulkanDevice,VK_NULL_HANDLE, state};
 
     
     /*vkb::Image OffScreenImage{*vulkanDevice,vkb::ImageBuilder{ 512,512,1}
@@ -345,19 +429,17 @@ void RenderSystem::prepare()
 
     std::vector<vkb::Image> images;
     images.emplace_back(*vulkanDevice,vkb::ImageBuilder{ 512,512,1}
-        .with_usage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT)
+        .with_usage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
         .with_format(VK_FORMAT_R8G8B8A8_UNORM));
     images.emplace_back(*vulkanDevice,vkb::ImageBuilder{ 512,512,1}
         .with_usage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
         .with_format(VK_FORMAT_D32_SFLOAT));
     
     
-    vkb::RenderTarget OffScreenRT{std::move(images)};
+    OffScreenRT = new vkb::RenderTarget{std::move(images)};
      
-    vkb::Framebuffer OffScreenFB{*vulkanDevice,OffScreenRT,render_pass};
-
-    auto imageView = OffScreenRT.get_views()[0].GetHandle();
-    
+    OffScreenFB = new vkb::Framebuffer{*vulkanDevice,*OffScreenRT,*render_pass};
+    OffScreenResourcesReady = true;
 }
 
 void RenderSystem::prepareFrame()
@@ -401,7 +483,57 @@ void RenderSystem::submitFrame()
 
 void RenderSystem::buildCommandBuffers()
 {
+    GlobalUI->draw(true);
+
     VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+    VK_CHECK_RESULT(vkBeginCommandBuffer(drawCmdBuffers[currentBuffer], &cmdBufInfo));
+    bool OffScreenImageReady = false;
+    if (OffScreenSize.x > 256 && OffScreenSize.y > 256 && OffScreenResourcesReady){
+        VkClearValue clearValues[2];
+        clearValues[0].color = { { 0.2f, 0.2f, 0.2f, 1.0f} };
+        clearValues[1].depthStencil = { 1.0f, 0 };
+
+        VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
+        renderPassBeginInfo.renderPass = render_pass->GetHandle();
+        renderPassBeginInfo.renderArea.offset.x = 0;
+        renderPassBeginInfo.renderArea.offset.y = 0;
+        renderPassBeginInfo.renderArea.extent.width = static_cast<uint32_t>(OffScreenSize.x);
+        renderPassBeginInfo.renderArea.extent.height = static_cast<uint32_t>(OffScreenSize.y);
+        renderPassBeginInfo.clearValueCount = 2;
+        renderPassBeginInfo.pClearValues = clearValues;
+    
+        renderPassBeginInfo.framebuffer = OffScreenFB->get_handle();// TODO
+        //vkb::image_layout_transition(drawCmdBuffers[currentBuffer], OffScreenRT->get_views()[0].get_image().GetHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+
+        vkCmdBeginRenderPass(drawCmdBuffers[currentBuffer], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        VkViewport viewport = vks::initializers::viewport(OffScreenSize.x, OffScreenSize.y, 0.0f, 1.0f);
+        vkCmdSetViewport(drawCmdBuffers[currentBuffer], 0, 1, &viewport);
+
+        VkRect2D scissor = vks::initializers::rect2D(OffScreenSize.x, OffScreenSize.y, 0, 0);
+        vkCmdSetScissor(drawCmdBuffers[currentBuffer], 0, 1, &scissor);
+
+        // Render scene
+        std::vector<VkDescriptorSet> descriptorSets = {DescriptorSet1->get_handle(), DescriptorSet2->get_handle(), DescriptorSet3->get_handle() };
+        vkCmdBindDescriptorSets(drawCmdBuffers[currentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, layout->get_handle(), 0, descriptorSets.size(), descriptorSets.data(), 0, nullptr);
+        vkCmdBindPipeline(drawCmdBuffers[currentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->get_handle());
+
+        vkCmdPushConstants(
+        drawCmdBuffers[currentBuffer],              // 命令缓冲区
+        layout->get_handle(),             // 管线布局
+        VK_SHADER_STAGE_VERTEX_BIT, // 着色器阶段（根据实际使用调整）
+        0,                         // 偏移量
+        sizeof(PushConstants),     // 数据大小
+        &Constant                  // 数据指针（使用你的结构体实例）
+        );
+        
+        Simple.draw(drawCmdBuffers[currentBuffer]);
+    
+        vkCmdEndRenderPass(drawCmdBuffers[currentBuffer]);
+        //vkb::image_layout_transition(drawCmdBuffers[currentBuffer], OffScreenRT->get_views()[0].get_image().GetHandle(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        OffScreenImageReady = true;
+    }
 
     VkClearValue clearValues[1];
     clearValues[0].color = {{0.2f, 0.2f, 0.2f, 1.0f}};
@@ -414,22 +546,19 @@ void RenderSystem::buildCommandBuffers()
     renderPassBeginInfo.renderArea.extent.height = height;
     renderPassBeginInfo.clearValueCount = 1;
     renderPassBeginInfo.pClearValues = clearValues;
-    GlobalUI->draw();
-    for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
-    {
-        // Set target frame buffer
-        renderPassBeginInfo.framebuffer = frameBuffers[i];
+    
+ 
+    // Set target frame buffer
+    renderPassBeginInfo.framebuffer = frameBuffers[currentBuffer];
 
-        VK_CHECK_RESULT(vkBeginCommandBuffer(drawCmdBuffers[i], &cmdBufInfo));
+    vkCmdBeginRenderPass(drawCmdBuffers[currentBuffer], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-        vkCmdBeginRenderPass(drawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), drawCmdBuffers[currentBuffer]);
 
-        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), drawCmdBuffers[i]);
+    vkCmdEndRenderPass(drawCmdBuffers[currentBuffer]);
 
-        vkCmdEndRenderPass(drawCmdBuffers[i]);
-
-        VK_CHECK_RESULT(vkEndCommandBuffer(drawCmdBuffers[i]));
-    }
+    VK_CHECK_RESULT(vkEndCommandBuffer(drawCmdBuffers[currentBuffer]));
+    
     // Update and Render additional Platform Windows
     if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
@@ -478,6 +607,12 @@ void RenderSystem::renderLoop(float DeltaTime)
         return;
     }
     prepareFrame();
+    
+    UpdateUnifrom();
+
+
+
+    
     buildCommandBuffers();
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];

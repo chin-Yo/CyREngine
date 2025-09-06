@@ -4,7 +4,11 @@
 #include "Framework/Core/VulkanSwapChain.hpp"
 #include "VulkanUIOverlay.hpp"
 #include <optional>
+
+#include "Camera/Camera.hpp"
+#include "Framework/Core/Buffer.hpp"
 #include "Framework/Core/RenderPass.hpp"
+#include "Framework/Core/VulkanglTFModel.hpp"
 
 class RenderSystem
 {
@@ -23,7 +27,7 @@ private:
     
     void setupFrameBuffer();
     void UpdateIconityState(bool iconified);
-
+    void UpdateUnifrom();
 public:
     RenderSystem();
     ~RenderSystem();
@@ -47,6 +51,7 @@ public:
     UIOverlay *GlobalUI = nullptr;
 
 public:
+    vkglTF::Model Simple;
     bool prepared = false;
     bool IsIconity = false;
     std::string title = "Vulkan Render";
@@ -143,4 +148,101 @@ protected:
 
     // Active frame buffer index
     uint32_t currentBuffer = 0;
+
+
+    
+    // UboScene 结构体
+    struct UboScene {
+        glm::mat4 projection;
+        glm::mat4 view;
+        glm::vec3 cameraPos;
+    
+        // 注意：由于GLSL std140布局的对齐要求，可能需要填充
+        float _padding0;  // 4字节填充以对齐vec3
+    
+        // 构造函数
+        UboScene() : projection(1.0f), view(1.0f), cameraPos(0.0f), _padding0(0.0f) {}
+    }Scene;
+
+    // Light 结构体
+    struct Light {
+        glm::vec3 position;
+        float _padding0;  // 4字节填充以对齐vec3
+    
+        glm::vec3 color;
+        float ambientStrength;
+    
+        // 构造函数
+        Light() : position(0.0f), _padding0(0.0f), color(1.0f), ambientStrength(0.1f) {}
+    };
+
+    // UboLight 结构体
+    struct UboLight {
+        Light light;
+    
+        // 构造函数
+        UboLight() {}
+    }Light;
+
+    // Material 结构体
+    struct Material {
+        glm::vec3 ambient;
+        float _padding0;   // 4字节填充
+    
+        glm::vec3 diffuse;
+        float _padding1;   // 4字节填充
+    
+        glm::vec3 specular;
+        float shininess;
+    
+        // 构造函数
+        Material() : 
+            ambient(0.1f), _padding0(0.0f),
+            diffuse(0.8f), _padding1(0.0f),
+            specular(1.0f), shininess(32.0f) {}
+    };
+
+    // UboMaterial 结构体
+    struct UboMaterial {
+        Material material;
+    
+        // 构造函数
+        UboMaterial() {}
+    }Material;
+
+    // Push Constants 结构体
+    struct PushConstants {
+        glm::mat4 model;
+    
+        // 构造函数
+        PushConstants() : model(1.0f) {}
+    }Constant;
+    
+    vkb::PipelineLayout *layout;
+
+    vkb::RenderPass *render_pass;
+
+    vkb::GraphicsPipeline *pipeline;
+    
+    vkb::RenderTarget *OffScreenRT;
+
+    vkb::Framebuffer *OffScreenFB;
+
+    ImVec2 OffScreenSize = {256.0f, 256.0f};
+
+    std::vector<VkCommandBuffer> OffScreenDrawCmdBuffers;
+    
+    vkb::DescriptorPool *Pool1;
+    vkb::DescriptorPool *Pool2;
+    vkb::DescriptorPool *Pool3;
+
+    vkb::DescriptorSet *DescriptorSet1;
+    vkb::DescriptorSet *DescriptorSet2;
+    vkb::DescriptorSet *DescriptorSet3;
+    
+    vkb::Buffer * uboScene;
+    vkb::Buffer * uboLight;
+    vkb::Buffer * uboMaterial;
+    bool OffScreenResourcesReady = false;
+    Camera camera;
 };

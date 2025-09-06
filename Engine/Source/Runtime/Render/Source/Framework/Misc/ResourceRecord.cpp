@@ -17,7 +17,7 @@
 
 #include "Framework/Misc/ResourceRecord.hpp"
 #include "Framework/Core/ShaderModule.hpp"
-
+#include "Framework/Rendering/RenderTarget.hpp"
 #include "Framework/Misc/ResourceCache.hpp"
 
 namespace vkb

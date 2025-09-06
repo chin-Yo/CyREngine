@@ -97,7 +97,7 @@ namespace vkb
 		VkBool32 depth_write_enable{VK_TRUE};
 
 		// Note: Using reversed depth-buffer for increased precision, so Greater depth values are kept
-		VkCompareOp depth_compare_op{VK_COMPARE_OP_GREATER};
+		VkCompareOp depth_compare_op{VK_COMPARE_OP_LESS_OR_EQUAL};
 
 		VkBool32 depth_bounds_test_enable{VK_FALSE};
 

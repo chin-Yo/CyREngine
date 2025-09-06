@@ -121,12 +121,40 @@ namespace vkb
         }
     } // namespace
 
+    /**
+        * @brief Generate an attachment description array based on attachment information and load/store information
+        * 
+        * This function iterates through the input attachment array, creating a corresponding description structure for each attachment;
+        * sets attributes such as format, sample count, and layout;
+        * *and sets the final layout based on whether it is a depth format*
+        * 
+        * @tparam T The type of the attachment description structure
+        * @param attachments The attachment information array, containing information such as format, sample count, and initial layout
+        * @param load_store_infos The load/store operation information array, specifying the load and store operations for the attachments
+        * @return std::vector<T> Returns the constructed attachment description array
+        */
     template <typename T>
     std::vector<T> get_attachment_descriptions(const std::vector<Attachment> &attachments,
                                                const std::vector<LoadStoreInfo> &load_store_infos)
     {
         std::vector<T> attachment_descriptions;
 
+        auto SetFinalLayout = [](VkFormat format, VkImageUsageFlags usage)->VkImageLayout
+        {
+            if ((usage & VK_IMAGE_USAGE_SAMPLED_BIT) != 0) {
+                return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
+    
+            if ((usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0 || vkb::is_depth_format(format)) {
+                return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            }
+    
+            if ((usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) != 0) {
+                return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            }
+            return VK_IMAGE_LAYOUT_GENERAL;
+        };
+        
         for (size_t i = 0U; i < attachments.size(); ++i)
         {
             T attachment{};
@@ -135,10 +163,10 @@ namespace vkb
             attachment.format = attachments[i].format;
             attachment.samples = attachments[i].samples;
             attachment.initialLayout = attachments[i].initial_layout;
-            attachment.finalLayout =
-                vkb::is_depth_format(attachment.format)
+            attachment.finalLayout = SetFinalLayout(attachment.format, attachments[i].usage);
+                /*vkb::is_depth_format(attachment.format)
                     ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-                    : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;*/
 
             if (i < load_store_infos.size())
             {
@@ -308,15 +336,22 @@ namespace vkb
                 T color_dep{};
                 color_dep.srcSubpass = subpass_id;
                 color_dep.dstSubpass = subpass_id + 1;
-                color_dep.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                /*color_dep.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
                 color_dep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
                                          VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
                 color_dep.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                 color_dep.dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-                                          VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                                          VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;*/
+                color_dep.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // 等待上一帧的ImGui片段着色器读取完成
+                color_dep.srcAccessMask = VK_ACCESS_SHADER_READ_BIT; // 等待读取操作
+
+                // ...才开始什么阶段
+                color_dep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // 开始本帧的颜色附件写入
+                color_dep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // 开始写入操作
                 color_dep.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
                 dependencies.push_back(color_dep);
-
+                
+                // ... 创建RenderPass时 pDependencies 指向这个 dependency
                 if (depth_stencil_dependency)
                 {
                     T depth_dep{};
@@ -532,8 +567,8 @@ namespace vkb
             subpass_descriptions.push_back(subpass_description);
         }
 
-        set_attachment_layouts<T_SubpassDescription, T_AttachmentDescription, T_AttachmentReference>(
-            subpass_descriptions, attachment_descriptions);
+        //set_attachment_layouts<T_SubpassDescription, T_AttachmentDescription, T_AttachmentReference>(
+            //subpass_descriptions, attachment_descriptions);
 
         color_output_count.reserve(subpass_count);
         for (size_t i = 0; i < subpass_count; i++)
@@ -584,6 +619,12 @@ namespace vkb
             create_renderpass<VkSubpassDescription, VkAttachmentDescription, VkAttachmentReference, VkSubpassDependency,
                               VkRenderPassCreateInfo>(attachments, load_store_infos, subpasses);
         }
+    }
+
+    RenderPass::RenderPass(VulkanDevice& device, vks::RenderPassBuilder& builder) : VulkanResource{VK_NULL_HANDLE, &device},
+                                                                                   color_output_count{}
+    {
+        SetHandle(builder.build().get());
     }
 
     RenderPass::RenderPass(RenderPass &&other) : VulkanResource{std::move(other)},
@@ -737,5 +778,18 @@ namespace vks
 
         // 将创建好的 VkRenderPass 和 VkDevice 传递给 RAII 包装类
         return RenderPass(m_device, renderPass);
+    }
+
+    VkRenderPassCreateInfo RenderPassBuilder::buildCreateInfo()
+    {
+        VkRenderPassCreateInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo.attachmentCount = static_cast<uint32_t>(m_attachments.size());
+        renderPassInfo.pAttachments = m_attachments.data();
+        renderPassInfo.subpassCount = static_cast<uint32_t>(m_subpasses.size());
+        renderPassInfo.pSubpasses = m_subpasses.data();
+        renderPassInfo.dependencyCount = static_cast<uint32_t>(m_dependencies.size());
+        renderPassInfo.pDependencies = m_dependencies.data();
+        return renderPassInfo;
     }
 }

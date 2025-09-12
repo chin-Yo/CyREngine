@@ -183,7 +183,7 @@ namespace vkb
 		// Perform the Vulkan call to update the DescriptorSet by executing the write operations
 		if (!write_operations.empty())
 		{
-			vkUpdateDescriptorSets(device.logicalDevice,
+			vkUpdateDescriptorSets(device.GetHandle(),
 								   to_u32(write_operations.size()),
 								   write_operations.data(),
 								   0,
@@ -200,7 +200,7 @@ namespace vkb
 
 	void DescriptorSet::apply_writes() const
 	{
-		vkUpdateDescriptorSets(device.logicalDevice,
+		vkUpdateDescriptorSets(device.GetHandle(),
 							   to_u32(write_descriptor_sets.size()),
 							   write_descriptor_sets.data(),
 							   0,

@@ -122,39 +122,42 @@ namespace vkb
     } // namespace
 
     /**
-        * @brief Generate an attachment description array based on attachment information and load/store information
-        * 
-        * This function iterates through the input attachment array, creating a corresponding description structure for each attachment;
-        * sets attributes such as format, sample count, and layout;
-        * *and sets the final layout based on whether it is a depth format*
-        * 
-        * @tparam T The type of the attachment description structure
-        * @param attachments The attachment information array, containing information such as format, sample count, and initial layout
-        * @param load_store_infos The load/store operation information array, specifying the load and store operations for the attachments
-        * @return std::vector<T> Returns the constructed attachment description array
-        */
+     * @brief Generate an attachment description array based on attachment information and load/store information
+     *
+     * This function iterates through the input attachment array, creating a corresponding description structure for each attachment;
+     * sets attributes such as format, sample count, and layout;
+     * *and sets the final layout based on whether it is a depth format*
+     *
+     * @tparam T The type of the attachment description structure
+     * @param attachments The attachment information array, containing information such as format, sample count, and initial layout
+     * @param load_store_infos The load/store operation information array, specifying the load and store operations for the attachments
+     * @return std::vector<T> Returns the constructed attachment description array
+     */
     template <typename T>
     std::vector<T> get_attachment_descriptions(const std::vector<Attachment> &attachments,
                                                const std::vector<LoadStoreInfo> &load_store_infos)
     {
         std::vector<T> attachment_descriptions;
 
-        auto SetFinalLayout = [](VkFormat format, VkImageUsageFlags usage)->VkImageLayout
+        auto SetFinalLayout = [](VkFormat format, VkImageUsageFlags usage) -> VkImageLayout
         {
-            if ((usage & VK_IMAGE_USAGE_SAMPLED_BIT) != 0) {
+            if ((usage & VK_IMAGE_USAGE_SAMPLED_BIT) != 0)
+            {
                 return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             }
-    
-            if ((usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0 || vkb::is_depth_format(format)) {
+
+            if ((usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0 || vkb::is_depth_format(format))
+            {
                 return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
             }
-    
-            if ((usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) != 0) {
+
+            if ((usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) != 0)
+            {
                 return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             }
             return VK_IMAGE_LAYOUT_GENERAL;
         };
-        
+
         for (size_t i = 0U; i < attachments.size(); ++i)
         {
             T attachment{};
@@ -164,9 +167,9 @@ namespace vkb
             attachment.samples = attachments[i].samples;
             attachment.initialLayout = attachments[i].initial_layout;
             attachment.finalLayout = SetFinalLayout(attachment.format, attachments[i].usage);
-                /*vkb::is_depth_format(attachment.format)
-                    ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-                    : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;*/
+            /*vkb::is_depth_format(attachment.format)
+                ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+                : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;*/
 
             if (i < load_store_infos.size())
             {
@@ -343,14 +346,14 @@ namespace vkb
                 color_dep.dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
                                           VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;*/
                 color_dep.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // 等待上一帧的ImGui片段着色器读取完成
-                color_dep.srcAccessMask = VK_ACCESS_SHADER_READ_BIT; // 等待读取操作
+                color_dep.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;            // 等待读取操作
 
                 // ...才开始什么阶段
                 color_dep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // 开始本帧的颜色附件写入
-                color_dep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // 开始写入操作
+                color_dep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;         // 开始写入操作
                 color_dep.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
                 dependencies.push_back(color_dep);
-                
+
                 // ... 创建RenderPass时 pDependencies 指向这个 dependency
                 if (depth_stencil_dependency)
                 {
@@ -567,8 +570,8 @@ namespace vkb
             subpass_descriptions.push_back(subpass_description);
         }
 
-        //set_attachment_layouts<T_SubpassDescription, T_AttachmentDescription, T_AttachmentReference>(
-            //subpass_descriptions, attachment_descriptions);
+        // set_attachment_layouts<T_SubpassDescription, T_AttachmentDescription, T_AttachmentReference>(
+        // subpass_descriptions, attachment_descriptions);
 
         color_output_count.reserve(subpass_count);
         for (size_t i = 0; i < subpass_count; i++)
@@ -588,7 +591,7 @@ namespace vkb
         create_info.dependencyCount = to_u32(subpass_dependencies.size());
         create_info.pDependencies = subpass_dependencies.data();
 
-        auto result = create_vk_renderpass(GetDevice().logicalDevice, create_info, &GetHandle());
+        auto result = create_vk_renderpass(GetDevice().GetHandle(), create_info, &GetHandle());
 
         if (result != VK_SUCCESS)
         {
@@ -608,7 +611,7 @@ namespace vkb
                                                                             std::max<size_t>(1, subpasses.size())}, // At least 1 subpass
                                                                         color_output_count{}
     {
-        if (device.IsEnableExtension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME))
+        if (device.is_enabled(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME))
         {
             create_renderpass<VkSubpassDescription2KHR, VkAttachmentDescription2KHR, VkAttachmentReference2KHR,
                               VkSubpassDependency2KHR, VkRenderPassCreateInfo2KHR>(
@@ -621,8 +624,8 @@ namespace vkb
         }
     }
 
-    RenderPass::RenderPass(VulkanDevice& device, vks::RenderPassBuilder& builder) : VulkanResource{VK_NULL_HANDLE, &device},
-                                                                                   color_output_count{}
+    RenderPass::RenderPass(VulkanDevice &device, vks::RenderPassBuilder &builder) : VulkanResource{VK_NULL_HANDLE, &device},
+                                                                                    color_output_count{}
     {
         SetHandle(builder.build().get());
     }
@@ -636,9 +639,9 @@ namespace vkb
     RenderPass::~RenderPass()
     {
         // Destroy render pass
-        if (GetDevice() && GetDevice().logicalDevice)
+        if (GetDevice() && GetDevice().GetHandle())
         {
-            vkDestroyRenderPass(GetDevice().logicalDevice, GetHandle(), nullptr);
+            vkDestroyRenderPass(GetDevice().GetHandle(), GetHandle(), nullptr);
         }
     }
 
@@ -650,7 +653,7 @@ namespace vkb
     VkExtent2D RenderPass::get_render_area_granularity() const
     {
         VkExtent2D render_area_granularity = {};
-        vkGetRenderAreaGranularity(GetDevice().logicalDevice, GetHandle(), &render_area_granularity);
+        vkGetRenderAreaGranularity(GetDevice().GetHandle(), GetHandle(), &render_area_granularity);
 
         return render_area_granularity;
     }

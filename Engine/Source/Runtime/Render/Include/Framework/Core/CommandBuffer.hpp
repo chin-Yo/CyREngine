@@ -5,6 +5,7 @@
 #include "Image.hpp"
 #include "PipelineState.hpp"
 #include "VulkanResource.hpp"
+#include "Framework/Misc/ResourceBindingState.hpp"
 
 namespace vkb
 {
@@ -13,7 +14,9 @@ namespace vkb
 	class QueryPool;
 	struct LoadStoreInfo;
 	class Framebuffer;
-
+	class CommandPool;
+	struct LightingState;
+	class Subpass;
 	class CommandBuffer
 		: public VulkanResource<VkCommandBuffer>
 	{
@@ -97,7 +100,7 @@ namespace vkb
 							   RenderPassType const &render_pass,
 							   FramebufferType const &framebuffer,
 							   std::vector<ClearValueType> const &clear_values,
-							   SubpassContentsType contents = vk::SubpassContents::eInline);
+							   SubpassContentsType contents = VK_SUBPASS_CONTENTS_INLINE);
 		void bind_buffer(vkb::Buffer const &buffer, DeviceSizeType offset, DeviceSizeType range, uint32_t set, uint32_t binding, uint32_t array_element);
 		void bind_image(ImageViewType const &image_view, SamplerType const &sampler, uint32_t set, uint32_t binding, uint32_t array_element);
 		void bind_image(ImageViewType const &image_view, uint32_t set, uint32_t binding, uint32_t array_element);
@@ -178,7 +181,7 @@ namespace vkb
 		/**
 		 * @brief Flushes the command buffer, pushing the new changes
 		 */
-		void flush(vk::PipelineBindPoint pipeline_bind_point);
+		void flush(VkPipelineBindPoint pipeline_bind_point);
 
 		/**
 		 * @brief Flush the push constant state
@@ -188,36 +191,63 @@ namespace vkb
 		/**
 		 * @brief Check that the render area is an optimal size by comparing to the render area granularity
 		 */
-		bool is_render_size_optimal(const vk::Extent2D &extent, const vk::Rect2D &render_area);
+		bool is_render_size_optimal(const VkExtent2D &extent, const VkRect2D &render_area);
 
 	private:
-		void begin_impl(vk::CommandBufferUsageFlags flags, vkb::CommandBuffer *primary_cmd_buf);
-		void begin_impl(vk::CommandBufferUsageFlags flags,
+		void begin_impl(VkCommandBufferUsageFlags flags, vkb::CommandBuffer *primary_cmd_buf);
+		void begin_impl(VkCommandBufferUsageFlags flags,
 						vkb::RenderPass const *render_pass,
 						vkb::Framebuffer const *framebuffer,
 						uint32_t subpass_index);
 		void begin_render_pass_impl(vkb::RenderTarget const &render_target,
 									vkb::RenderPass const &render_pass,
 									vkb::Framebuffer const &framebuffer,
-									std::vector<vk::ClearValue> const &clear_values,
-									vk::SubpassContents contents);
+									std::vector<VkClearValue> const &clear_values,
+									VkSubpassContents contents);
 		void bind_vertex_buffers_impl(uint32_t first_binding,
 									  std::vector<std::reference_wrapper<const vkb::Buffer>> const &buffers,
-									  std::vector<vk::DeviceSize> const &offsets);
+									  std::vector<VkDeviceSize> const &offsets);
 		void buffer_memory_barrier_impl(vkb::Buffer const &buffer,
-										vk::DeviceSize offset,
-										vk::DeviceSize size,
+										VkDeviceSize offset,
+										VkDeviceSize size,
 										vkb::BufferMemoryBarrier const &memory_barrier);
-		void copy_buffer_impl(vkb::Buffer const &src_buffer, vkb::BufferCpp const &dst_buffer, vk::DeviceSize size);
-		void execute_commands_impl(std::vector<std::shared_ptr<vkb::CommandBuffer<vkb::BindingType::Cpp>>> &secondary_command_buffers);
-		void flush_impl(vkb::VulkanDevice &device, vk::PipelineBindPoint pipeline_bind_point);
-		void flush_descriptor_state_impl(vk::PipelineBindPoint pipeline_bind_point);
-		void flush_pipeline_state_impl(vkb::VulkanDevice &device, vk::PipelineBindPoint pipeline_bind_point);
+		void copy_buffer_impl(vkb::Buffer const &src_buffer, vkb::Buffer const &dst_buffer, VkDeviceSize size);
+		void execute_commands_impl(std::vector<std::shared_ptr<vkb::CommandBuffer>> &secondary_command_buffers);
+		void flush_impl(vkb::VulkanDevice &device, VkPipelineBindPoint pipeline_bind_point);
+		void flush_descriptor_state_impl(VkPipelineBindPoint pipeline_bind_point);
+		void flush_pipeline_state_impl(vkb::VulkanDevice &device, VkPipelineBindPoint pipeline_bind_point);
 		vkb::RenderPass &get_render_pass_impl(vkb::VulkanDevice &device,
-													   vkb::RenderTarget const &render_target,
-													   std::vector<vkb::LoadStoreInfo> const &load_store_infos,
-													   std::vector<std::unique_ptr<vkb::Subpass>> const &subpasses);
+											  vkb::RenderTarget const &render_target,
+											  std::vector<vkb::LoadStoreInfo> const &load_store_infos,
+											  std::vector<std::unique_ptr<vkb::Subpass>> const &subpasses);
 		void image_memory_barrier_impl(vkb::ImageView const &image_view, vkb::ImageMemoryBarrier const &memory_barrier) const;
-		vk::Result reset_impl(vkb::CommandBufferResetMode reset_mode);
+		VkResult reset_impl(vkb::CommandBufferResetMode reset_mode);
+
+	private:
+		vkb::CommandPool &command_pool;
+
+		vkb::Framebuffer const *current_framebuffer = nullptr;
+
+		vkb::RenderPass const *current_render_pass = nullptr;
+
+		std::unordered_map<uint32_t, vkb::DescriptorSetLayout const *> descriptor_set_layout_binding_state;
+
+		VkExtent2D last_framebuffer_extent = {};
+
+		VkExtent2D last_render_area_extent = {};
+
+		const VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+		const uint32_t max_push_constants_size = {};
+
+		vkb::PipelineState pipeline_state = {};
+
+		vkb::ResourceBindingState resource_binding_state = {};
+
+		std::vector<uint8_t> stored_push_constants = {};
+
+		// If true, it becomes the responsibility of the caller to update ANY descriptor bindings
+		// that contain update after bind, as they wont be implicitly updated
+		bool update_after_bind = false;
 	};
 }

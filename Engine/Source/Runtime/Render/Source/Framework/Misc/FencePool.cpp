@@ -33,7 +33,7 @@ namespace vkb
 		// Destroy all fences
 		for (VkFence fence : fences)
 		{
-			vkDestroyFence(device.logicalDevice, fence, nullptr);
+			vkDestroyFence(device.GetHandle(), fence, nullptr);
 		}
 
 		fences.clear();
@@ -51,7 +51,7 @@ namespace vkb
 
 		VkFenceCreateInfo create_info{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
 
-		VkResult result = vkCreateFence(device.logicalDevice, &create_info, nullptr, &fence);
+		VkResult result = vkCreateFence(device.GetHandle(), &create_info, nullptr, &fence);
 
 		if (result != VK_SUCCESS)
 		{
@@ -72,7 +72,7 @@ namespace vkb
 			return VK_SUCCESS;
 		}
 
-		return vkWaitForFences(device.logicalDevice, active_fence_count, fences.data(), true, timeout);
+		return vkWaitForFences(device.GetHandle(), active_fence_count, fences.data(), true, timeout);
 	}
 
 	VkResult FencePool::reset()
@@ -82,7 +82,7 @@ namespace vkb
 			return VK_SUCCESS;
 		}
 
-		VkResult result = vkResetFences(device.logicalDevice, active_fence_count, fences.data());
+		VkResult result = vkResetFences(device.GetHandle(), active_fence_count, fences.data());
 
 		if (result != VK_SUCCESS)
 		{

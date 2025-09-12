@@ -23,7 +23,7 @@ namespace vkb
 {
 	QueryPool::QueryPool(VulkanDevice &d, const VkQueryPoolCreateInfo &info) : device{d}
 	{
-		VK_CHECK_RESULT(vkCreateQueryPool(device.logicalDevice, &info, nullptr, &handle));
+		VK_CHECK_RESULT(vkCreateQueryPool(device.GetHandle(), &info, nullptr, &handle));
 	}
 
 	QueryPool::QueryPool(QueryPool &&other) : device{other.device},
@@ -36,7 +36,7 @@ namespace vkb
 	{
 		if (handle != VK_NULL_HANDLE)
 		{
-			vkDestroyQueryPool(device.logicalDevice, handle, nullptr);
+			vkDestroyQueryPool(device.GetHandle(), handle, nullptr);
 		}
 	}
 
@@ -48,17 +48,17 @@ namespace vkb
 
 	void QueryPool::host_reset(uint32_t first_query, uint32_t query_count)
 	{
-		assert(device.IsEnableExtension("VK_EXT_host_query_reset") &&
+		assert(device.is_enabled("VK_EXT_host_query_reset") &&
 			   "VK_EXT_host_query_reset needs to be enabled to call QueryPool::host_reset");
 
-		vkResetQueryPoolEXT(device.logicalDevice, get_handle(), first_query, query_count);
+		vkResetQueryPoolEXT(device.GetHandle(), get_handle(), first_query, query_count);
 	}
 
 	VkResult QueryPool::get_results(uint32_t first_query, uint32_t num_queries,
 									size_t result_bytes, void *results, VkDeviceSize stride,
 									VkQueryResultFlags flags)
 	{
-		return vkGetQueryPoolResults(device.logicalDevice, get_handle(), first_query, num_queries,
+		return vkGetQueryPoolResults(device.GetHandle(), get_handle(), first_query, num_queries,
 									 result_bytes, results, stride, flags);
 	}
 

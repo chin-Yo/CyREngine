@@ -41,7 +41,7 @@ namespace vkb
 		// Destroy pipeline
 		if (handle != VK_NULL_HANDLE)
 		{
-			vkDestroyPipeline(device.logicalDevice, handle, nullptr);
+			vkDestroyPipeline(device.GetHandle(), handle, nullptr);
 		}
 	}
 
@@ -77,15 +77,15 @@ namespace vkb
 		vk_create_info.codeSize = shader_module->get_binary().size() * sizeof(uint32_t);
 		vk_create_info.pCode = shader_module->get_binary().data();
 
-		VkResult result = vkCreateShaderModule(device.logicalDevice, &vk_create_info, nullptr, &stage.module);
+		VkResult result = vkCreateShaderModule(device.GetHandle(), &vk_create_info, nullptr, &stage.module);
 		if (result != VK_SUCCESS)
 		{
 			throw VulkanException{result};
 		}
 
-		device.GetDebugUtils().set_debug_name(device.logicalDevice,
-												VK_OBJECT_TYPE_SHADER_MODULE, reinterpret_cast<uint64_t>(stage.module),
-												shader_module->get_debug_name().c_str());
+		device.GetDebugUtils().set_debug_name(device.GetHandle(),
+											  VK_OBJECT_TYPE_SHADER_MODULE, reinterpret_cast<uint64_t>(stage.module),
+											  shader_module->get_debug_name().c_str());
 
 		// Create specialization info from tracked state.
 		std::vector<uint8_t> data{};
@@ -112,14 +112,14 @@ namespace vkb
 		create_info.layout = pipeline_state.get_pipeline_layout().get_handle();
 		create_info.stage = stage;
 
-		result = vkCreateComputePipelines(device.logicalDevice, pipeline_cache, 1, &create_info, nullptr, &handle);
+		result = vkCreateComputePipelines(device.GetHandle(), pipeline_cache, 1, &create_info, nullptr, &handle);
 
 		if (result != VK_SUCCESS)
 		{
 			throw VulkanException{result, "Cannot create ComputePipelines"};
 		}
 
-		vkDestroyShaderModule(device.logicalDevice, stage.module, nullptr);
+		vkDestroyShaderModule(device.GetHandle(), stage.module, nullptr);
 	}
 
 	GraphicsPipeline::GraphicsPipeline(VulkanDevice &device,
@@ -161,15 +161,15 @@ namespace vkb
 			vk_create_info.codeSize = shader_module->get_binary().size() * sizeof(uint32_t);
 			vk_create_info.pCode = shader_module->get_binary().data();
 
-			VkResult result = vkCreateShaderModule(device.logicalDevice, &vk_create_info, nullptr, &stage_create_info.module);
+			VkResult result = vkCreateShaderModule(device.GetHandle(), &vk_create_info, nullptr, &stage_create_info.module);
 			if (result != VK_SUCCESS)
 			{
 				throw VulkanException{result};
 			}
 
-			device.GetDebugUtils().set_debug_name(device.logicalDevice,
-													VK_OBJECT_TYPE_SHADER_MODULE, reinterpret_cast<uint64_t>(stage_create_info.module),
-													shader_module->get_debug_name().c_str());
+			device.GetDebugUtils().set_debug_name(device.GetHandle(),
+												  VK_OBJECT_TYPE_SHADER_MODULE, reinterpret_cast<uint64_t>(stage_create_info.module),
+												  shader_module->get_debug_name().c_str());
 
 			stage_create_info.pSpecializationInfo = &specialization_info;
 
@@ -288,7 +288,7 @@ namespace vkb
 		create_info.renderPass = pipeline_state.get_render_pass()->GetHandle();
 		create_info.subpass = pipeline_state.get_subpass_index();
 
-		auto result = vkCreateGraphicsPipelines(device.logicalDevice, pipeline_cache, 1, &create_info, nullptr, &handle);
+		auto result = vkCreateGraphicsPipelines(device.GetHandle(), pipeline_cache, 1, &create_info, nullptr, &handle);
 
 		if (result != VK_SUCCESS)
 		{
@@ -297,7 +297,7 @@ namespace vkb
 
 		for (auto shader_module : shader_modules)
 		{
-			vkDestroyShaderModule(device.logicalDevice, shader_module, nullptr);
+			vkDestroyShaderModule(device.GetHandle(), shader_module, nullptr);
 		}
 
 		state = pipeline_state;

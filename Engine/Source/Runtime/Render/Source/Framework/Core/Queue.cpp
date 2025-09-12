@@ -27,7 +27,7 @@ namespace vkb
 																																		  can_present{can_present},
 																																		  properties{properties}
 	{
-		vkGetDeviceQueue(device.logicalDevice, family_index, index, &handle);
+		vkGetDeviceQueue(device.GetHandle(), family_index, index, &handle);
 	}
 
 	Queue::Queue(Queue &&other) : device{other.device},

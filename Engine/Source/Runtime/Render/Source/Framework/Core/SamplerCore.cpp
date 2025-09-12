@@ -24,7 +24,7 @@ namespace vkb
 
 	Sampler::Sampler(VulkanDevice &d, const VkSamplerCreateInfo &info) : VulkanResource{VK_NULL_HANDLE, &d}
 	{
-		VK_CHECK(vkCreateSampler(GetDevice().logicalDevice, &info, nullptr, &GetHandle()));
+		VK_CHECK(vkCreateSampler(GetDevice().GetHandle(), &info, nullptr, &GetHandle()));
 	}
 
 	Sampler::Sampler(Sampler &&other) : VulkanResource{std::move(other)}
@@ -35,7 +35,7 @@ namespace vkb
 	{
 		if (HasDevice())
 		{
-			vkDestroySampler(GetDevice().logicalDevice, GetHandle(), nullptr);
+			vkDestroySampler(GetDevice().GetHandle(), GetHandle(), nullptr);
 		}
 	}
 

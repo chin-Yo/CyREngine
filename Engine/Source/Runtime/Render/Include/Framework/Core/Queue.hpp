@@ -23,7 +23,7 @@
 namespace vkb
 {
 	class VulkanDevice;
-
+	class CommandBuffer;
 	class Queue
 	{
 	public:

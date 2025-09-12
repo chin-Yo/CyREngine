@@ -188,13 +188,13 @@ namespace vkb
     {
         VkMemoryRequirements memory_requirements;
 
-        vkGetImageMemoryRequirements(GetDevice().logicalDevice, GetHandle(), &memory_requirements);
+        vkGetImageMemoryRequirements(GetDevice().GetHandle(), GetHandle(), &memory_requirements);
 
         return memory_requirements.size;
     }
 
     VkImageCompressionPropertiesEXT Image::get_applied_compression() const
     {
-        return query_applied_compression(GetDevice().logicalDevice, GetHandle());
+        return query_applied_compression(GetDevice().GetHandle(), GetHandle());
     }
 } // namespace vkb

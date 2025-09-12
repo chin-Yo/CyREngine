@@ -166,7 +166,7 @@ protected:
     // Command buffer pool
     VkCommandPool cmdPool{VK_NULL_HANDLE};
     // Wraps the swap chain to present images (framebuffers) to the windowing system
-    VulkanSwapChain swapChain;
+    SwapChain swapChain;
     /** @brief Pipeline stages used to wait at for graphics queue submissions */
     VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     // Contains command buffers and semaphores to be presented to the queue

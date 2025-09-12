@@ -6,24 +6,24 @@
 #include "GlobalContext.hpp"
 #include "Framework/Core/RenderPass.hpp"
 
-UIOverlay::UIOverlay(vkb::VulkanDevice *device) : descriptorPool(vks::DescriptorPoolBuilder(device->logicalDevice)
-																.setMaxSets(10)
-																.addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, 1000)
-																.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000)
-																.addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000)
-																.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000)
-																.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000)
-																.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000)
-																.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000)
-																.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000)
-																.addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000)
-																.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000)
-																.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000)
-																.setPoolFlags(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
-																.build())
+UIOverlay::UIOverlay(vkb::VulkanDevice *device) : descriptorPool(vks::DescriptorPoolBuilder(device->GetHandle())
+																	 .setMaxSets(10)
+																	 .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, 1000)
+																	 .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000)
+																	 .addPoolSize(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000)
+																	 .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000)
+																	 .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000)
+																	 .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000)
+																	 .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000)
+																	 .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000)
+																	 .addPoolSize(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000)
+																	 .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000)
+																	 .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000)
+																	 .setPoolFlags(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
+																	 .build())
 {
 	this->vulkanDevice = device;
-	OffScreenSampler = new vkb::Sampler({*vulkanDevice,vks::initializers::samplerCreateInfo()});
+	OffScreenSampler = new vkb::Sampler({*vulkanDevice, vks::initializers::samplerCreateInfo()});
 }
 
 UIOverlay::~UIOverlay()
@@ -55,9 +55,9 @@ void UIOverlay::InitImGui(VkInstance instance, VkRenderPass renderPass, VkQueue 
 	// 初始化 Vulkan 后端
 	ImGui_ImplVulkan_InitInfo init_info = {};
 	init_info.Instance = instance;
-	init_info.PhysicalDevice = vulkanDevice->physicalDevice;
-	init_info.Device = vulkanDevice->logicalDevice;
-	init_info.QueueFamily = vulkanDevice->queueFamilyIndices.graphics;
+	init_info.PhysicalDevice = vulkanDevice->get_gpu().get_handle();
+	init_info.Device = vulkanDevice->GetHandle();
+	init_info.QueueFamily = vulkanDevice->get_queue_family_index(VK_QUEUE_GRAPHICS_BIT);
 	init_info.Queue = queue;
 	init_info.PipelineCache = VK_NULL_HANDLE;
 	init_info.DescriptorPool = descriptorPool.get(); // 需要提前创建
@@ -354,18 +354,18 @@ void UIOverlay::RenderViewport(bool off)
 
 	// 检查尺寸是否有效且与上次记录的不同
 	if (currentViewportSize.x > 0.0f && currentViewportSize.y > 0.0f &&
-		(m_ViewportSize.x != currentViewportSize.x || m_ViewportSize.y != currentViewportSize.y)) 
+		(m_ViewportSize.x != currentViewportSize.x || m_ViewportSize.y != currentViewportSize.y))
 	{
 		// 尺寸变了！
 		m_ViewportSize = currentViewportSize;
 		m_ViewportResized = true; // 设置标志位！
-        
+
 		// 你可以在这里打印日志，方便调试
 		// printf("Viewport resized to: %.0f x %.0f\n", m_ViewportSize.x, m_ViewportSize.y);
 		OnViewportChange(currentViewportSize);
 	}
 	if (m_DescriptorSet != nullptr && off)
-		ImGui::Image(m_DescriptorSet,m_ViewportSize);
+		ImGui::Image(m_DescriptorSet, m_ViewportSize);
 
 	ImGui::End();
 }

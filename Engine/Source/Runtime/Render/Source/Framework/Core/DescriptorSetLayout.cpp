@@ -228,7 +228,7 @@ namespace vkb
                 throw std::runtime_error("Cannot create descriptor set layout, dynamic resources are not allowed if at least one resource is update-after-bind.");
             }
 
-            if (!validate_flags(device.physicalDevice, bindings, binding_flags))
+            if (!validate_flags(device.get_gpu().get_handle(), bindings, binding_flags))
             {
                 throw std::runtime_error("Invalid binding, couldn't create descriptor set layout.");
             }
@@ -241,7 +241,7 @@ namespace vkb
         }
 
         // Create the Vulkan descriptor set layout handle
-        VkResult result = vkCreateDescriptorSetLayout(device.logicalDevice, &create_info, nullptr, &handle);
+        VkResult result = vkCreateDescriptorSetLayout(device.GetHandle(), &create_info, nullptr, &handle);
 
         if (result != VK_SUCCESS)
         {
@@ -267,7 +267,7 @@ namespace vkb
         // Destroy descriptor set layout
         if (handle != VK_NULL_HANDLE)
         {
-            vkDestroyDescriptorSetLayout(device.logicalDevice, handle, nullptr);
+            vkDestroyDescriptorSetLayout(device.GetHandle(), handle, nullptr);
         }
     }
 

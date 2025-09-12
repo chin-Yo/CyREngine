@@ -57,4 +57,11 @@ private:
 #define LOG_ERROR_P(...) SPDLOG_LOGGER_ERROR(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__));
 #define LOG_CRITICAL_P(...) SPDLOG_LOGGER_CRITICAL(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__));
 
+#define LOGT(...) LOG_TRACE(__VA_ARGS__)
+#define LOGD(...) LOG_DEBUG(__VA_ARGS__)
+#define LOGI(...) LOG_INFO(__VA_ARGS__)
+#define LOGW(...) LOG_WARN(__VA_ARGS__)
+#define LOGE(...) LOG_ERROR(__VA_ARGS__)
+#define LOGC(...) LOG_CRITICAL(__VA_ARGS__)
+
 #endif // LOGGER_H

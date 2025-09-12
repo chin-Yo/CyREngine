@@ -20,6 +20,8 @@ namespace vkb
     class DescriptorSet;
     class RenderTarget;
     class VulkanDevice;
+    class Queue;
+    class CommandPool;
     
     enum BufferAllocationStrategy
     {
@@ -118,7 +120,7 @@ namespace vkb
         void update_render_target(std::unique_ptr<RenderTargetType> &&render_target);
 
     private:
-        vkb::BufferAllocation allocate_buffer_impl(vk::BufferUsageFlags usage, vk::DeviceSize size, size_t thread_index);
+        vkb::BufferAllocation allocate_buffer_impl(VkBufferUsageFlags usage, VkDeviceSize size, size_t thread_index);
         vkb::CommandPool &get_command_pool_impl(vkb::Queue const &queue, vkb::CommandBufferResetMode reset_mode, size_t thread_index);
 
         /**
@@ -130,16 +132,16 @@ namespace vkb
          */
         std::vector<vkb::CommandPool> &get_command_pools(const vkb::Queue &queue, vkb::CommandBufferResetMode reset_mode);
 
-        vk::DescriptorSet request_descriptor_set_impl(vkb::DescriptorSetLayout const &descriptor_set_layout,
-                                                      BindingMap<vk::DescriptorBufferInfo> const &buffer_infos,
-                                                      BindingMap<vk::DescriptorImageInfo> const &image_infos,
+        VkDescriptorSet request_descriptor_set_impl(vkb::DescriptorSetLayout const &descriptor_set_layout,
+                                                      BindingMap<VkDescriptorBufferInfo> const &buffer_infos,
+                                                      BindingMap<VkDescriptorImageInfo> const &image_infos,
                                                       bool update_after_bind,
                                                       size_t thread_index = 0);
 
     private:
         VulkanDevice &device;
         std::map<VkBufferUsageFlags, std::vector<std::pair<vkb::BufferPool, vkb::BufferBlock *>>> buffer_pools;
-        //std::map<uint32_t, std::vector<vkb::CommandPool>> command_pools;                    // Commands pools per queue family index
+        std::map<uint32_t, std::vector<vkb::CommandPool>> command_pools;                    // Commands pools per queue family index
         std::vector<std::unordered_map<std::size_t, vkb::DescriptorPool>> descriptor_pools; // Descriptor pools per thread
         std::vector<std::unordered_map<std::size_t, vkb::DescriptorSet>> descriptor_sets;   // Descriptor sets per thread
         vkb::FencePool fence_pool;

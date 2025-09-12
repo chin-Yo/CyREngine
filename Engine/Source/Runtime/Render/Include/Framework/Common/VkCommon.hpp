@@ -13,6 +13,10 @@
 #include <type_traits>
 #include <vk_mem_alloc.h>
 
+// #include "Framework/Common/VkHelpers.hpp"
+// #include "Framework/Common/Optional.hpp"
+// #include "Framework/Common/VkCommon.hpp
+
 template <typename T>
 constexpr VkObjectType GetVkObjectType();
 
@@ -57,6 +61,15 @@ using BindingMap = std::map<uint32_t, std::map<uint32_t, T>>;
 
 namespace vkb
 {
+    
+    enum class CommandBufferResetMode
+    {
+        ResetPool,
+        ResetIndividually,
+        AlwaysAllocate,
+    };
+
+
     /**
      * @brief Helper function to determine if a Vulkan format is depth only.
      * @param format Vulkan format to check.
@@ -143,6 +156,45 @@ namespace vkb
         VkPhysicalDevice gpu, const VkImageCreateInfo &create_info);
 
     VkImageCompressionPropertiesEXT query_applied_compression(VkDevice device, VkImage image);
+
+    /**
+     * @brief Image memory barrier structure used to define
+     *        memory access for an image view during command recording.
+     */
+
+    struct ImageMemoryBarrier
+    {
+        VkPipelineStageFlags src_stage_mask{VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT};
+
+        VkPipelineStageFlags dst_stage_mask{VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
+
+        VkAccessFlags src_access_mask{0};
+
+        VkAccessFlags dst_access_mask{0};
+
+        VkImageLayout old_layout{VK_IMAGE_LAYOUT_UNDEFINED};
+
+        VkImageLayout new_layout{VK_IMAGE_LAYOUT_UNDEFINED};
+
+        uint32_t src_queue_family{VK_QUEUE_FAMILY_IGNORED};
+
+        uint32_t dst_queue_family{VK_QUEUE_FAMILY_IGNORED};
+    };
+
+    /**
+     * @brief Buffer memory barrier structure used to define
+     *        memory access for a buffer during command recording.
+     */
+    struct BufferMemoryBarrier
+    {
+        VkPipelineStageFlags src_stage_mask{VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT};
+
+        VkPipelineStageFlags dst_stage_mask{VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
+
+        VkAccessFlags src_access_mask{0};
+
+        VkAccessFlags dst_access_mask{0};
+    };
 
     /**
      * @brief Put an image memory barrier for a layout transition of an image, using explicitly give transition parameters.

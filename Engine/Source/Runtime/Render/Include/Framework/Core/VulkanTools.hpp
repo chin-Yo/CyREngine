@@ -50,16 +50,7 @@
 		}                                                                                                                    \
 	}
 #else
-#define VK_CHECK_RESULT(f)                                                                                                                    \
-	{                                                                                                                                         \
-		VkResult res = (f);                                                                                                                   \
-		if (res != VK_SUCCESS)                                                                                                                \
-		{                                                                                                                                     \
-			LOG_ERROR_P("Fatal : VkResult is {}", vks::tools::errorString(res))															  \
-			assert(res == VK_SUCCESS);                                                                                                        \
-		}                                                                                                                                     \
-	}
-#endif
+
 
 const std::string getAssetPath();
 const std::string getShaderBasePath();

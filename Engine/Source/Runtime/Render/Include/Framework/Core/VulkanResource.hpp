@@ -129,7 +129,7 @@ namespace vkb
         debug_name = name;
         if (device && !debug_name.empty())
         {
-            GetDevice().GetDebugUtils().set_debug_name(GetDevice().logicalDevice, GetObjectType(), GetHandleU64(), debug_name.c_str());
+            GetDevice().GetDebugUtils().set_debug_name(GetDevice().GetHandle(), GetObjectType(), GetHandleU64(), debug_name.c_str());
         }
     }
 

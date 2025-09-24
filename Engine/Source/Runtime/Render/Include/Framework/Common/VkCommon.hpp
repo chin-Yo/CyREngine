@@ -9,9 +9,9 @@
 #include "VkError.hpp"
 
 #include <volk.h>
-
 #include <type_traits>
 #include <vk_mem_alloc.h>
+#include <vulkan/vulkan.hpp>
 
 // #include "Framework/Common/VkHelpers.hpp"
 // #include "Framework/Common/Optional.hpp"
@@ -49,6 +49,7 @@ DEFINE_VK_OBJECT_TYPE(VkDescriptorPool, VK_OBJECT_TYPE_DESCRIPTOR_POOL)
 DEFINE_VK_OBJECT_TYPE(VkDescriptorSet, VK_OBJECT_TYPE_DESCRIPTOR_SET)
 DEFINE_VK_OBJECT_TYPE(VkFramebuffer, VK_OBJECT_TYPE_FRAMEBUFFER)
 DEFINE_VK_OBJECT_TYPE(VkCommandPool, VK_OBJECT_TYPE_COMMAND_POOL)
+
 #define VK_FLAGS_NONE 0 // Custom define for better code readability
 
 #define DEFAULT_FENCE_TIMEOUT 100000000000 // Default fence timeout in nanoseconds
@@ -61,14 +62,12 @@ using BindingMap = std::map<uint32_t, std::map<uint32_t, T>>;
 
 namespace vkb
 {
-    
     enum class CommandBufferResetMode
     {
         ResetPool,
         ResetIndividually,
         AlwaysAllocate,
     };
-
 
     /**
      * @brief Helper function to determine if a Vulkan format is depth only.
@@ -101,10 +100,11 @@ namespace vkb
      */
     VkFormat get_suitable_depth_format(VkPhysicalDevice physical_device,
                                        bool depth_only = false,
-                                       const std::vector<VkFormat> &depth_format_priority_list = {
+                                       const std::vector<VkFormat>& depth_format_priority_list = {
                                            VK_FORMAT_D32_SFLOAT,
                                            VK_FORMAT_D24_UNORM_S8_UINT,
-                                           VK_FORMAT_D16_UNORM});
+                                           VK_FORMAT_D16_UNORM
+                                       });
 
     /**
      * @brief Helper function to pick a blendable format from a priority ordered list
@@ -113,7 +113,7 @@ namespace vkb
      * @return The selected format
      */
     VkFormat choose_blendable_format(VkPhysicalDevice physical_device,
-                                     const std::vector<VkFormat> &format_priority_list);
+                                     const std::vector<VkFormat>& format_priority_list);
 
     /**
      * @brief Helper function to check support for linear filtering and adjust its parameters if required
@@ -122,8 +122,8 @@ namespace vkb
      * @param filter The preferred filter to adjust
      * @param mipmapMode (Optional) The preferred mipmap mode to adjust
      */
-    void make_filters_valid(VkPhysicalDevice physical_device, VkFormat format, VkFilter *filter,
-                            VkSamplerMipmapMode *mipmapMode = nullptr);
+    void make_filters_valid(VkPhysicalDevice physical_device, VkFormat format, VkFilter* filter,
+                            VkSamplerMipmapMode* mipmapMode = nullptr);
 
     /**
      * @brief Helper function to determine if a Vulkan descriptor type is a dynamic storage buffer or dynamic uniform buffer.
@@ -153,7 +153,7 @@ namespace vkb
         VkImageCompressionFixedRateFlagsEXT flags);
 
     VkImageCompressionPropertiesEXT query_supported_fixed_rate_compression(
-        VkPhysicalDevice gpu, const VkImageCreateInfo &create_info);
+        VkPhysicalDevice gpu, const VkImageCreateInfo& create_info);
 
     VkImageCompressionPropertiesEXT query_applied_compression(VkDevice device, VkImage image);
 
@@ -216,7 +216,7 @@ namespace vkb
                                  VkAccessFlags dst_access_mask,
                                  VkImageLayout old_layout,
                                  VkImageLayout new_layout,
-                                 VkImageSubresourceRange const &subresource_range);
+                                 VkImageSubresourceRange const& subresource_range);
 
     /**
      * @brief Put an image memory barrier for a layout transition of an image, on a given subresource range.
@@ -233,7 +233,7 @@ namespace vkb
                                  VkImage image,
                                  VkImageLayout old_layout,
                                  VkImageLayout new_layout,
-                                 VkImageSubresourceRange const &subresource_range);
+                                 VkImageSubresourceRange const& subresource_range);
 
     /**
      * @brief Put an image memory barrier for a layout transition of an image, on a fixed subresource with first mip level and layer.
@@ -261,7 +261,40 @@ namespace vkb
      * @param new_layout The VkImageLayout to transition to.
      */
     void image_layout_transition(VkCommandBuffer command_buffer,
-                                 std::vector<std::pair<VkImage, VkImageSubresourceRange>> const &imagesAndRanges,
+                                 std::vector<std::pair<VkImage, VkImageSubresourceRange>> const& imagesAndRanges,
                                  VkImageLayout old_layout,
                                  VkImageLayout new_layout);
+
+    /**
+     * @brief Load and store info for a render pass attachment.
+     */
+    struct LoadStoreInfo
+    {
+        VkAttachmentLoadOp load_op = VK_ATTACHMENT_LOAD_OP_CLEAR;
+
+        VkAttachmentStoreOp store_op = VK_ATTACHMENT_STORE_OP_STORE;
+    };
+
+    namespace gbuffer
+    {
+        /**
+         * @return Load store info to load all and store only the swapchain
+         */
+        std::vector<LoadStoreInfo> get_load_all_store_swapchain();
+
+        /**
+         * @return Load store info to clear all and store only the swapchain
+         */
+        std::vector<LoadStoreInfo> get_clear_all_store_swapchain();
+
+        /**
+         * @return Load store info to clear and store all images
+         */
+        std::vector<LoadStoreInfo> get_clear_store_all();
+
+        /**
+         * @return Default clear values for the G-buffer
+         */
+        std::vector<VkClearValue> get_clear_value();
+    } // namespace gbuffer
 }

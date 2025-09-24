@@ -22,7 +22,6 @@
 #include <vector>
 #include <optional>
 #include "VulkanResource.hpp"
-// #include "core/vulkan_resource.h"
 
 
 namespace vks
@@ -35,10 +34,10 @@ namespace vks
         ~RenderPass();
 
         // 禁止拷贝，但允许移动
-        RenderPass(const RenderPass &) = delete;
-        RenderPass &operator=(const RenderPass &) = delete;
-        RenderPass(RenderPass &&other) noexcept;
-        RenderPass &operator=(RenderPass &&other) noexcept;
+        RenderPass(const RenderPass&) = delete;
+        RenderPass& operator=(const RenderPass&) = delete;
+        RenderPass(RenderPass&& other) noexcept;
+        RenderPass& operator=(RenderPass&& other) noexcept;
 
         // 获取底层的 Vulkan 句柄
         VkRenderPass get() const { return m_renderPass; }
@@ -55,7 +54,7 @@ namespace vks
         RenderPassBuilder(VkDevice device);
 
         // 添加附件 (Attachment)
-        RenderPassBuilder &addAttachment(
+        RenderPassBuilder& addAttachment(
             VkFormat format,
             VkSampleCountFlagBits samples,
             VkAttachmentLoadOp loadOp,
@@ -65,13 +64,13 @@ namespace vks
 
         // 添加子流程 (Subpass)
         // 使用附件的索引来指定 color/depth attachments
-        RenderPassBuilder &addSubpass(
+        RenderPassBuilder& addSubpass(
             VkPipelineBindPoint bindPoint,
-            const std::vector<uint32_t> &colorAttachmentIndices,
+            const std::vector<uint32_t>& colorAttachmentIndices,
             std::optional<uint32_t> depthAttachmentIndex = std::nullopt);
 
         // 添加子流程依赖 (Dependency)
-        RenderPassBuilder &addDependency(
+        RenderPassBuilder& addDependency(
             uint32_t srcSubpass,
             uint32_t dstSubpass,
             VkPipelineStageFlags srcStageMask,
@@ -83,6 +82,7 @@ namespace vks
         // 构建 RenderPass 对象
         RenderPass build();
         VkRenderPassCreateInfo buildCreateInfo();
+
     private:
         VkDevice m_device;
 
@@ -121,59 +121,25 @@ namespace vkb
         std::string debug_name;
     };
 
-    /**
-     * @brief Load and store info for a render pass attachment.
-     */
-    struct LoadStoreInfo
-    {
-        VkAttachmentLoadOp load_op = VK_ATTACHMENT_LOAD_OP_CLEAR;
-
-        VkAttachmentStoreOp store_op = VK_ATTACHMENT_STORE_OP_STORE;
-    };
-
-    /*/**
-     * @brief Description of render pass attachments.
-     * Attachment descriptions can be used to automatically create render target images.
-     #1#
-    struct Attachment
-    {
-        VkFormat format{VK_FORMAT_UNDEFINED};
-
-        VkSampleCountFlagBits samples{VK_SAMPLE_COUNT_1_BIT};
-
-        VkImageUsageFlags usage{VK_IMAGE_USAGE_SAMPLED_BIT};
-
-        VkImageLayout initial_layout{VK_IMAGE_LAYOUT_UNDEFINED};
-
-        Attachment() = default;
-
-        Attachment(VkFormat format, VkSampleCountFlagBits samples, VkImageUsageFlags usage)
-            : format(format),
-              samples(samples),
-              usage(usage)
-        {
-        }
-    };*/
-
     class RenderPass : public VulkanResource<VkRenderPass>
     {
     public:
-        RenderPass(VulkanDevice &device,
-                   const std::vector<Attachment> &attachments,
-                   const std::vector<LoadStoreInfo> &load_store_infos,
-                   const std::vector<SubpassInfo> &subpasses);
+        RenderPass(VulkanDevice& device,
+                   const std::vector<Attachment>& attachments,
+                   const std::vector<LoadStoreInfo>& load_store_infos,
+                   const std::vector<SubpassInfo>& subpasses);
 
-        RenderPass(VulkanDevice &device, vks::RenderPassBuilder& builder);
-        
-        RenderPass(const RenderPass &) = delete;
+        RenderPass(VulkanDevice& device, vks::RenderPassBuilder& builder);
 
-        RenderPass(RenderPass &&other);
+        RenderPass(const RenderPass&) = delete;
+
+        RenderPass(RenderPass&& other);
 
         ~RenderPass() override;
 
-        RenderPass &operator=(const RenderPass &) = delete;
+        RenderPass& operator=(const RenderPass&) = delete;
 
-        RenderPass &operator=(RenderPass &&) = delete;
+        RenderPass& operator=(RenderPass&&) = delete;
 
         const uint32_t get_color_output_count(uint32_t subpass_index) const;
 
@@ -184,9 +150,9 @@ namespace vkb
 
         template <typename T_SubpassDescription, typename T_AttachmentDescription, typename T_AttachmentReference,
                   typename T_SubpassDependency, typename T_RenderPassCreateInfo>
-        void create_renderpass(const std::vector<Attachment> &attachments,
-                               const std::vector<LoadStoreInfo> &load_store_infos,
-                               const std::vector<SubpassInfo> &subpasses);
+        void create_renderpass(const std::vector<Attachment>& attachments,
+                               const std::vector<LoadStoreInfo>& load_store_infos,
+                               const std::vector<SubpassInfo>& subpasses);
 
         std::vector<uint32_t> color_output_count;
     };

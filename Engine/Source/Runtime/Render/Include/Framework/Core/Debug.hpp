@@ -18,11 +18,12 @@
 #pragma once
 
 #include "Framework/Common/glmCommon.hpp"
-#include <cassert>
-#include "Framework/Common/VkCommon.hpp"
+#include <volk.h>
+#include <vulkan/vulkan.h>
 
 namespace vkb
 {
+    class CommandBuffer;
     /**
      * @brief An interface over platform-specific debug extensions.
      */
@@ -139,24 +140,24 @@ namespace vkb
         }
     };
 
-    // /**
-    //  * @brief A RAII debug label.
-    //  *        If any of EXT_debug_utils or EXT_debug_marker is available, this:
-    //  *        - Begins a debug label / marker on construction
-    //  *        - Ends it on destruction
-    //  */
-    // class ScopedDebugLabel final
-    // {
-    //   public:
-    // 	ScopedDebugLabel(const DebugUtils &debug_utils, VkCommandBuffer command_buffer,
-    // 	                 const char *name, glm::vec4 color = {});
+    /**
+     * @brief A RAII debug label.
+     *        If any of EXT_debug_utils or EXT_debug_marker is available, this:
+     *        - Begins a debug label / marker on construction
+     *        - Ends it on destruction
+     */
+    class ScopedDebugLabel final
+    {
+    public:
+        ScopedDebugLabel(const DebugUtils& debug_utils, VkCommandBuffer command_buffer,
+                         const char* name, glm::vec4 color = {});
 
-    // 	ScopedDebugLabel(const vkb::core::CommandBufferC &command_buffer, const char *name, glm::vec4 color = {});
+        ScopedDebugLabel(const vkb::CommandBuffer& command_buffer, const char* name, glm::vec4 color = {});
 
-    // 	~ScopedDebugLabel();
+        ~ScopedDebugLabel();
 
-    //   private:
-    // 	const DebugUtils *debug_utils;
-    // 	VkCommandBuffer   command_buffer;
-    // };
+    private:
+        const DebugUtils* debug_utils;
+        VkCommandBuffer command_buffer;
+    };
 } // namespace vkb

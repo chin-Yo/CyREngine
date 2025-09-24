@@ -43,7 +43,7 @@ namespace vkb
     const RenderTarget::CreateFunc RenderTarget::DEFAULT_CREATE_FUNC = [
         ](Image&& swapchain_image) -> std::unique_ptr<RenderTarget>
     {
-        VkFormat depth_format = get_suitable_depth_format(swapchain_image.GetDevice().physicalDevice);
+        VkFormat depth_format = get_suitable_depth_format(swapchain_image.GetDevice().get_gpu().get_handle());
 
         Image depth_image{
             swapchain_image.GetDevice(), swapchain_image.get_extent(),

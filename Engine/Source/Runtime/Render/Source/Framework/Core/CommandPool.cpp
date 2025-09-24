@@ -1,11 +1,12 @@
 #include "Framework/Core/CommandPool.hpp"
 #include "Framework/Core/CommandBuffer.hpp"
+#include "Framework/Core/VulkanDevice.hpp"
 
 namespace vkb
 {
-    CommandPool::CommandPool(vkb::VulkanDevice &device_,
+    CommandPool::CommandPool(vkb::VulkanDevice& device_,
                              uint32_t queue_family_index_,
-                             vkb::RenderFrame *render_frame_,
+                             vkb::RenderFrame* render_frame_,
                              size_t thread_index_,
                              vkb::CommandBufferResetMode reset_mode_) : device{device_},
                                                                         render_frame{render_frame_},
@@ -39,16 +40,24 @@ namespace vkb
         }
     }
 
-    CommandPool::CommandPool(CommandPool &&other) : device{other.device},
-                                                    handle{other.handle},
-                                                    render_frame{other.render_frame},
-                                                    thread_index{other.thread_index},
-                                                    queue_family_index{other.queue_family_index},
-                                                    primary_command_buffers{std::move(other.primary_command_buffers)},
-                                                    active_primary_command_buffer_count{other.active_primary_command_buffer_count},
-                                                    secondary_command_buffers{std::move(other.secondary_command_buffers)},
-                                                    active_secondary_command_buffer_count{other.active_secondary_command_buffer_count},
-                                                    reset_mode{other.reset_mode}
+    CommandPool::CommandPool(CommandPool&& other) noexcept : device{other.device},
+                                                             handle{other.handle},
+                                                             render_frame{other.render_frame},
+                                                             thread_index{other.thread_index},
+                                                             queue_family_index{other.queue_family_index},
+                                                             primary_command_buffers{
+                                                                 std::move(other.primary_command_buffers)
+                                                             },
+                                                             active_primary_command_buffer_count{
+                                                                 other.active_primary_command_buffer_count
+                                                             },
+                                                             secondary_command_buffers{
+                                                                 std::move(other.secondary_command_buffers)
+                                                             },
+                                                             active_secondary_command_buffer_count{
+                                                                 other.active_secondary_command_buffer_count
+                                                             },
+                                                             reset_mode{other.reset_mode}
     {
         other.handle = VK_NULL_HANDLE;
     }
@@ -63,7 +72,7 @@ namespace vkb
         }
     }
 
-    vkb::VulkanDevice &CommandPool::get_device()
+    vkb::VulkanDevice& CommandPool::get_device()
     {
         return device;
     }
@@ -78,7 +87,7 @@ namespace vkb
         return queue_family_index;
     }
 
-    vkb::RenderFrame *CommandPool::get_render_frame()
+    vkb::RenderFrame* CommandPool::get_render_frame()
     {
         return render_frame;
     }
@@ -93,7 +102,13 @@ namespace vkb
         return thread_index;
     }
 
-    std::shared_ptr<vkb::CommandBuffer> CommandPool::request_command_buffer(vkb::CommandPool &commandPool, VkCommandBufferLevel level)
+    std::shared_ptr<vkb::CommandBuffer> CommandPool::request_command_buffer(VkCommandBufferLevel level)
+    {
+        return CommandPool::request_command_buffer(*this, level);
+    }
+
+    std::shared_ptr<vkb::CommandBuffer> CommandPool::request_command_buffer(
+        vkb::CommandPool& commandPool, VkCommandBufferLevel level)
     {
         if (level == VK_COMMAND_BUFFER_LEVEL_PRIMARY)
         {
@@ -124,29 +139,29 @@ namespace vkb
         switch (reset_mode)
         {
         case vkb::CommandBufferResetMode::ResetIndividually:
-            for (auto &cmd_buf : primary_command_buffers)
+            for (auto& cmd_buf : primary_command_buffers)
             {
                 cmd_buf->reset(reset_mode);
             }
             active_primary_command_buffer_count = 0;
 
-            for (auto &cmd_buf : secondary_command_buffers)
+            for (auto& cmd_buf : secondary_command_buffers)
             {
                 cmd_buf->reset(reset_mode);
             }
             active_secondary_command_buffer_count = 0;
             break;
         case vkb::CommandBufferResetMode::ResetPool:
-        {
-            VkResult result = vkResetCommandPool(device.GetHandle(), handle, 0);
-            if (result != VK_SUCCESS)
             {
-                // TODO LOG
+                VkResult result = vkResetCommandPool(device.GetHandle(), handle, 0);
+                if (result != VK_SUCCESS)
+                {
+                    // TODO LOG
+                }
+                active_primary_command_buffer_count = 0;
+                active_secondary_command_buffer_count = 0;
+                break;
             }
-            active_primary_command_buffer_count = 0;
-            active_secondary_command_buffer_count = 0;
-            break;
-        }
         case vkb::CommandBufferResetMode::AlwaysAllocate:
             primary_command_buffers.clear();
             active_primary_command_buffer_count = 0;

@@ -64,8 +64,8 @@ namespace vkb
 				{
 					auto &buffer_info = element_it.second;
 
-					size_t uniform_buffer_range_limit = device.properties.limits.maxUniformBufferRange;
-					size_t storage_buffer_range_limit = device.properties.limits.maxStorageBufferRange;
+					size_t uniform_buffer_range_limit = device.get_gpu().get_properties().limits.maxUniformBufferRange;
+					size_t storage_buffer_range_limit = device.get_gpu().get_properties().limits.maxStorageBufferRange;
 
 					size_t buffer_range_limit = static_cast<size_t>(buffer_info.range);
 

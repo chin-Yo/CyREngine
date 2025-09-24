@@ -1,4 +1,4 @@
-set(TARGET_NAME RuntimeApp)
+set(TARGET_NAME Application)
 
 Include(${CMAKE_DIR}/LibBase.cmake)
 
@@ -7,9 +7,15 @@ target_include_directories(${TARGET_NAME} PUBLIC
     ${RUNTIME_DIR}/Core/Include
 )
 
-target_link_libraries(${TARGET_NAME} PUBLIC RuntimeCore Render imgui eventpp Engine)
+target_link_libraries(${TARGET_NAME} PUBLIC Core imgui eventpp Engine)
 
 target_compile_definitions(${TARGET_NAME} PRIVATE GLM_ENABLE_EXPERIMENTAL)
+
+target_compile_definitions(${TARGET_NAME}
+    PRIVATE
+        $<$<CONFIG:Debug>:DEBUG>
+        $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>:RELEASE>
+)
 
 if(DEFINED ENV{VULKAN_SDK})
     message(STATUS "Found Vulkan SDK at: $ENV{VULKAN_SDK}")

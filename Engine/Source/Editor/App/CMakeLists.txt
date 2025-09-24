@@ -25,9 +25,9 @@ target_include_directories(${TARGET_NAME} PUBLIC
     #${THIRD_PARTY_DIR}/spdlog/include
 )
 
-target_link_libraries(${TARGET_NAME} PRIVATE RuntimeApp)
+target_link_libraries(${TARGET_NAME} PRIVATE Application)
 target_link_libraries(${TARGET_NAME} PRIVATE glfw)
-target_link_libraries(${TARGET_NAME} PRIVATE RuntimeCore)
+target_link_libraries(${TARGET_NAME} PRIVATE Core)
 
 
 set_property(TARGET ${TARGET_NAME} PROPERTY VS_GLOBAL_DisableExternalDependencies true)

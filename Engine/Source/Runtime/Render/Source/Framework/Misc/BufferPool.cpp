@@ -1,7 +1,6 @@
 #include "Framework/Misc/BufferPool.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
 
-
 namespace vkb
 {
     BufferAllocation::BufferAllocation(Buffer &buffer, DeviceSizeType size, DeviceSizeType offset)
@@ -45,8 +44,9 @@ namespace vkb
     BufferBlock::BufferBlock(DeviceType &device, DeviceSizeType size, BufferUsageFlagsType usage, VmaMemoryUsage memory_usage)
         : buffer{device, size, usage, memory_usage}
     {
-        alignment = determine_alignment(usage, device.properties.limits);
+        alignment = determine_alignment(usage, device.get_gpu().get_properties().limits);
     }
+
     BufferAllocation BufferBlock::allocate(DeviceSizeType size)
     {
         if (can_allocate(size))
@@ -93,7 +93,7 @@ namespace vkb
         {
             return limits.minTexelBufferOffsetAlignment;
         }
-        else if (usage == VK_BUFFER_USAGE_INDEX_BUFFER_BIT || 
+        else if (usage == VK_BUFFER_USAGE_INDEX_BUFFER_BIT ||
                  usage == VK_BUFFER_USAGE_VERTEX_BUFFER_BIT ||
                  usage == VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT)
         {
@@ -106,24 +106,25 @@ namespace vkb
         }
     }
 
-    BufferPool::BufferPool(DeviceType& device, DeviceSizeType block_size, BufferUsageFlagsType usage,
-        VmaMemoryUsage memory_usage)
-            : device{device}, block_size(block_size), usage(usage), memory_usage(memory_usage)
+    BufferPool::BufferPool(DeviceType &device, DeviceSizeType block_size, BufferUsageFlagsType usage,
+                           VmaMemoryUsage memory_usage)
+        : device{device}, block_size(block_size), usage(usage), memory_usage(memory_usage)
     {
     }
 
-    BufferBlock& BufferPool::request_buffer_block(DeviceSizeType minimum_size, bool minimal)
+    BufferBlock &BufferPool::request_buffer_block(DeviceSizeType minimum_size, bool minimal)
     {
         // Find a block in the range of the blocks which can fit the minimum size
-        auto it = minimal ? 
-            std::find_if(buffer_blocks.begin(), buffer_blocks.end(),
-                [&minimum_size](auto const &buffer_block) { 
-                    return (buffer_block->get_size() == minimum_size) && buffer_block->can_allocate(minimum_size); 
-                }) :
-            std::find_if(buffer_blocks.begin(), buffer_blocks.end(),
-                [&minimum_size](auto const &buffer_block) { 
-                    return buffer_block->can_allocate(minimum_size); 
-                });
+        auto it = minimal ? std::find_if(buffer_blocks.begin(), buffer_blocks.end(),
+                                         [&minimum_size](auto const &buffer_block)
+                                         {
+                                             return (buffer_block->get_size() == minimum_size) && buffer_block->can_allocate(minimum_size);
+                                         })
+                          : std::find_if(buffer_blocks.begin(), buffer_blocks.end(),
+                                         [&minimum_size](auto const &buffer_block)
+                                         {
+                                             return buffer_block->can_allocate(minimum_size);
+                                         });
         if (it == buffer_blocks.end())
         {
             // TODO LOGD("Building #{} buffer block ({})", buffer_blocks.size(), vk::to_string(usage));

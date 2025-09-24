@@ -21,22 +21,20 @@
 
 namespace vkb
 {
+    Sampler::Sampler(VulkanDevice& d, const VkSamplerCreateInfo& info) : VulkanResource{VK_NULL_HANDLE, &d}
+    {
+        VK_CHECK_RESULT(vkCreateSampler(GetDevice().GetHandle(), &info, nullptr, &GetHandle()));
+    }
 
-	Sampler::Sampler(VulkanDevice &d, const VkSamplerCreateInfo &info) : VulkanResource{VK_NULL_HANDLE, &d}
-	{
-		VK_CHECK(vkCreateSampler(GetDevice().GetHandle(), &info, nullptr, &GetHandle()));
-	}
+    Sampler::Sampler(Sampler&& other) : VulkanResource{std::move(other)}
+    {
+    }
 
-	Sampler::Sampler(Sampler &&other) : VulkanResource{std::move(other)}
-	{
-	}
-
-	Sampler::~Sampler()
-	{
-		if (HasDevice())
-		{
-			vkDestroySampler(GetDevice().GetHandle(), GetHandle(), nullptr);
-		}
-	}
-
+    Sampler::~Sampler()
+    {
+        if (HasDevice())
+        {
+            vkDestroySampler(GetDevice().GetHandle(), GetHandle(), nullptr);
+        }
+    }
 } // namespace vkb

@@ -20,6 +20,7 @@
 #include "Framework/Common/ResourceCaching.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
 #include "Logging/Logger.hpp"
+#include "Framework/Core/RenderPass.hpp"
 
 namespace vkb
 {

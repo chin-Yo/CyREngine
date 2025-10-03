@@ -6,10 +6,17 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+
+# ---- Compiler options ----
 if(MSVC)
     add_compile_options(/utf-8)
     add_compile_definitions(NOMINMAX)
+    add_compile_options(/Zc:__cplusplus)
 endif()
+
+# globally add DEBUG for the debug build
+add_compile_definitions($<$<CONFIG:DEBUG>:DEBUG>)
+
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

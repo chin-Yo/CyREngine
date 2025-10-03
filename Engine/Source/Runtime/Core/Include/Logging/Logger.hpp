@@ -7,24 +7,25 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/async.h>
+#include "spdlog/fmt/fmt.h"
 
 enum class LogLevel
 {
-    TRACE = spdlog::level::trace,
-    DEBUG = spdlog::level::debug,
-    INFO = spdlog::level::info,
-    WARN = spdlog::level::warn,
-    _ERROR = spdlog::level::err,
-    CRITICAL = spdlog::level::critical,
-    OFF = spdlog::level::off
+    LogTRACE = spdlog::level::trace,
+    LogDEBUG = spdlog::level::debug,
+    LogINFO = spdlog::level::info,
+    LogWARN = spdlog::level::warn,
+    LogERROR = spdlog::level::err,
+    LogCRITICAL = spdlog::level::critical,
+    LogOFF = spdlog::level::off
 };
 
 class Logger
 {
 public:
-    static void Init(const std::string &name = "Logger",
-                     LogLevel level = LogLevel::INFO,
-                     const std::string &filepath = "",
+    static void Init(const std::string& name = "Logger",
+                     LogLevel level = LogLevel::LogINFO,
+                     const std::string& filepath = "",
                      bool async = false,
                      size_t max_file_size = 1024 * 1024 * 5,
                      size_t max_files = 3);
@@ -56,5 +57,12 @@ private:
 #define LOG_WARN_P(...) SPDLOG_LOGGER_WARN(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__));
 #define LOG_ERROR_P(...) SPDLOG_LOGGER_ERROR(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__));
 #define LOG_CRITICAL_P(...) SPDLOG_LOGGER_CRITICAL(Logger::GetLogger(), "[{}:{}] {}", __FILE__, __LINE__, fmt::format(__VA_ARGS__));
+
+#define LOGT(...) LOG_TRACE(__VA_ARGS__)
+#define LOGD(...) LOG_DEBUG(__VA_ARGS__)
+#define LOGI(...) LOG_INFO(__VA_ARGS__)
+#define LOGW(...) LOG_WARN(__VA_ARGS__)
+#define LOGE(...) LOG_ERROR(__VA_ARGS__)
+#define LOGC(...) LOG_CRITICAL(__VA_ARGS__)
 
 #endif // LOGGER_H

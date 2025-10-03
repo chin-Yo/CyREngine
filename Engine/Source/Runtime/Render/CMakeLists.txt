@@ -1,4 +1,4 @@
-set(TARGET_NAME Render)
+set(TARGET_NAME VkWrap)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -44,7 +44,7 @@ target_include_directories(${TARGET_NAME} PUBLIC
     ${THIRD_PARTY_DIR}/glm
 )
 
-target_link_libraries(${TARGET_NAME} PUBLIC PhysicsEngine volk RuntimeCore spdlog::spdlog)
+target_link_libraries(${TARGET_NAME} PUBLIC PhysicsEngine volk Core spdlog::spdlog)
 target_link_libraries(${TARGET_NAME} PUBLIC glm spirv-cross-glsl spirv-cross-reflect) 
 target_link_libraries(${TARGET_NAME} PUBLIC imgui vma)
 target_link_libraries(${TARGET_NAME} PUBLIC ktx)

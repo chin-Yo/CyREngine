@@ -22,6 +22,8 @@
 #include <string>
 #include <volk.h>
 #include "Framework/Common/VkStrings.hpp"
+#include "Framework/Core/VulkanInitializers.hpp"
+#include "Logging/Logger.hpp"
 
 namespace vkb
 {
@@ -34,13 +36,13 @@ namespace vkb
         /**
          * @brief Vulkan exception constructor
          */
-        VulkanException(VkResult result, const std::string& msg = "Vulkan error");
+        VulkanException(VkResult result, const std::string &msg = "Vulkan error");
 
         /**
          * @brief Returns the Vulkan error code as string
          * @return String message of exception
          */
-        const char* what() const noexcept override;
+        const char *what() const noexcept override;
 
         VkResult result;
 
@@ -50,22 +52,23 @@ namespace vkb
 } // namespace vkb
 
 /// @brief Helper macro to test the result of Vulkan calls which can return an error.
-#define VK_CHECK(x)                                                                    \
-	do                                                                                 \
-	{                                                                                  \
-		VkResult err = x;                                                              \
-		if (err)                                                                       \
-		{                                                                              \
-			throw std::runtime_error("Detected Vulkan error: " + vkb::to_string(err)); \
-		}                                                                              \
-	} while (0)
+#define VK_CHECK_RESULT(f)                                             \
+    do                                                                 \
+    {                                                                  \
+        VkResult res = (f);                                            \
+        if (res != VK_SUCCESS)                                         \
+        {                                                              \
+            LOG_ERROR_P("Fatal : VkResult is {}", vkb::to_string(res)) \
+            assert(res == VK_SUCCESS);                                 \
+        }                                                              \
+    } while (0)
 
 #define ASSERT_VK_HANDLE(handle)        \
-	do                                  \
-	{                                   \
-		if ((handle) == VK_NULL_HANDLE) \
-		{                               \
-			LOGE("Handle is NULL");     \
-			abort();                    \
-		}                               \
-	} while (0)
+    do                                  \
+    {                                   \
+        if ((handle) == VK_NULL_HANDLE) \
+        {                               \
+            LOGE("Handle is NULL");     \
+            abort();                    \
+        }                               \
+    } while (0)

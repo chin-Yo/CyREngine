@@ -4,6 +4,7 @@
 #include "Framework/Misc/BuilderBase.hpp"
 #include <memory>
 #include <vector>
+
 class vkb::VulkanDevice;
 
 namespace vkb

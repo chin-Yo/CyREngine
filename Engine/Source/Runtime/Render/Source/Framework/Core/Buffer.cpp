@@ -64,7 +64,7 @@ namespace vkb
         info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
         info.buffer = this->GetHandle();
 
-        return vkGetBufferDeviceAddress(this->GetDevice().logicalDevice, &info);
+        return vkGetBufferDeviceAddress(this->GetDevice().GetHandle(), &info);
     }
 #else
     uint64_t Buffer::get_device_address() const

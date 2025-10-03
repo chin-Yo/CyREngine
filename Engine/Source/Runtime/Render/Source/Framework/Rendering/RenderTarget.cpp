@@ -19,6 +19,37 @@
 #include "Framework/Core/VulkanDevice.hpp"
 #include "Framework/Core/Image.hpp"
 
+
+namespace vkb // Create functions
+{
+    const RenderTarget::CreateFunc RenderTarget::DEFAULT_CREATE_FUNC = [
+        ](Image&& swapchain_image) -> std::unique_ptr<RenderTarget>
+    {
+        VkFormat depth_format = get_suitable_depth_format(swapchain_image.GetDevice().get_gpu().get_handle());
+
+        Image depth_image{
+            swapchain_image.GetDevice(), swapchain_image.get_extent(),
+            depth_format,
+            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+            VMA_MEMORY_USAGE_GPU_ONLY
+        };
+
+        std::vector<Image> images;
+        images.push_back(std::move(swapchain_image));
+        images.push_back(std::move(depth_image));
+
+        return std::make_unique<RenderTarget>(std::move(images));
+    };
+
+    const RenderTarget::CreateFunc RenderTarget::ONE_IMAGE_FUNC = [
+        ](Image&& swapchain_image) -> std::unique_ptr<RenderTarget>
+    {
+        std::vector<Image> images;
+        images.push_back(std::move(swapchain_image));
+        return std::make_unique<RenderTarget>(std::move(images));
+    };
+}
+
 namespace vkb
 {
     namespace
@@ -39,25 +70,6 @@ namespace vkb
         usage{usage}
     {
     }
-
-    const RenderTarget::CreateFunc RenderTarget::DEFAULT_CREATE_FUNC = [
-        ](Image&& swapchain_image) -> std::unique_ptr<RenderTarget>
-    {
-        VkFormat depth_format = get_suitable_depth_format(swapchain_image.GetDevice().physicalDevice);
-
-        Image depth_image{
-            swapchain_image.GetDevice(), swapchain_image.get_extent(),
-            depth_format,
-            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
-            VMA_MEMORY_USAGE_GPU_ONLY
-        };
-
-        std::vector<Image> images;
-        images.push_back(std::move(swapchain_image));
-        images.push_back(std::move(depth_image));
-
-        return std::make_unique<RenderTarget>(std::move(images));
-    };
 
     RenderTarget::RenderTarget(std::vector<Image>&& images) :
         device{images.back().GetDevice()},

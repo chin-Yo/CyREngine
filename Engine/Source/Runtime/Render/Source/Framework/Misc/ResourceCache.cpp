@@ -16,33 +16,33 @@
  */
 
 #include "Framework/Misc/ResourceCache.hpp"
-
+#include "Framework/Rendering/RenderTarget.hpp"
 #include "Framework/Common/ResourceCaching.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
 #include "Logging/Logger.hpp"
-
+#include "Framework/Core/RenderPass.hpp"
 
 namespace vkb
 {
     namespace
     {
         template <class T, class... A>
-        T& request_resource(VulkanDevice& device, ResourceRecord& recorder, std::mutex& resource_mutex,
-                            std::unordered_map<std::size_t, T>& resources, A&... args)
+        T &request_resource(VulkanDevice &device, ResourceRecord &recorder, std::mutex &resource_mutex,
+                            std::unordered_map<std::size_t, T> &resources, A &...args)
         {
             std::lock_guard<std::mutex> guard(resource_mutex);
 
-            auto& res = request_resource(device, &recorder, resources, args...);
+            auto &res = request_resource(device, &recorder, resources, args...);
 
             return res;
         }
     } // namespace
 
-    ResourceCache::ResourceCache(VulkanDevice& device) : device{device}
+    ResourceCache::ResourceCache(VulkanDevice &device) : device{device}
     {
     }
 
-    void ResourceCache::warmup(const std::vector<uint8_t>& data)
+    void ResourceCache::warmup(const std::vector<uint8_t> &data)
     {
         recorder.set_data(data);
 
@@ -59,58 +59,58 @@ namespace vkb
         pipeline_cache = new_pipeline_cache;
     }
 
-    ShaderModule& ResourceCache::request_shader_module(VkShaderStageFlagBits stage, const ShaderSource& glsl_source,
-                                                       const ShaderVariant& shader_variant)
+    ShaderModule &ResourceCache::request_shader_module(VkShaderStageFlagBits stage, const ShaderSource &glsl_source,
+                                                       const ShaderVariant &shader_variant)
     {
         std::string entry_point{"main"};
         return request_resource(device, recorder, shader_module_mutex, state.shader_modules, stage, glsl_source,
                                 entry_point, shader_variant);
     }
 
-    PipelineLayout& ResourceCache::request_pipeline_layout(const std::vector<ShaderModule*>& shader_modules)
+    PipelineLayout &ResourceCache::request_pipeline_layout(const std::vector<ShaderModule *> &shader_modules)
     {
         return request_resource(device, recorder, pipeline_layout_mutex, state.pipeline_layouts, shader_modules);
     }
 
-    DescriptorSetLayout& ResourceCache::request_descriptor_set_layout(const uint32_t set_index,
-                                                                      const std::vector<ShaderModule*>& shader_modules,
-                                                                      const std::vector<ShaderResource>& set_resources)
+    DescriptorSetLayout &ResourceCache::request_descriptor_set_layout(const uint32_t set_index,
+                                                                      const std::vector<ShaderModule *> &shader_modules,
+                                                                      const std::vector<ShaderResource> &set_resources)
     {
         return request_resource(device, recorder, descriptor_set_layout_mutex, state.descriptor_set_layouts, set_index,
                                 shader_modules, set_resources);
     }
 
-    GraphicsPipeline& ResourceCache::request_graphics_pipeline(PipelineState& pipeline_state)
+    GraphicsPipeline &ResourceCache::request_graphics_pipeline(PipelineState &pipeline_state)
     {
         return request_resource(device, recorder, graphics_pipeline_mutex, state.graphics_pipelines, pipeline_cache,
                                 pipeline_state);
     }
 
-    ComputePipeline& ResourceCache::request_compute_pipeline(PipelineState& pipeline_state)
+    ComputePipeline &ResourceCache::request_compute_pipeline(PipelineState &pipeline_state)
     {
         return request_resource(device, recorder, compute_pipeline_mutex, state.compute_pipelines, pipeline_cache,
                                 pipeline_state);
     }
 
-    DescriptorSet& ResourceCache::request_descriptor_set(DescriptorSetLayout& descriptor_set_layout,
-                                                         const BindingMap<VkDescriptorBufferInfo>& buffer_infos,
-                                                         const BindingMap<VkDescriptorImageInfo>& image_infos)
+    DescriptorSet &ResourceCache::request_descriptor_set(DescriptorSetLayout &descriptor_set_layout,
+                                                         const BindingMap<VkDescriptorBufferInfo> &buffer_infos,
+                                                         const BindingMap<VkDescriptorImageInfo> &image_infos)
     {
-        auto& descriptor_pool = request_resource(device, recorder, descriptor_set_mutex, state.descriptor_pools,
+        auto &descriptor_pool = request_resource(device, recorder, descriptor_set_mutex, state.descriptor_pools,
                                                  descriptor_set_layout);
         return request_resource(device, recorder, descriptor_set_mutex, state.descriptor_sets, descriptor_set_layout,
                                 descriptor_pool, buffer_infos, image_infos);
     }
 
-    RenderPass& ResourceCache::request_render_pass(const std::vector<Attachment>& attachments,
-                                                   const std::vector<LoadStoreInfo>& load_store_infos,
-                                                   const std::vector<SubpassInfo>& subpasses)
+    RenderPass &ResourceCache::request_render_pass(const std::vector<Attachment> &attachments,
+                                                   const std::vector<LoadStoreInfo> &load_store_infos,
+                                                   const std::vector<SubpassInfo> &subpasses)
     {
         return request_resource(device, recorder, render_pass_mutex, state.render_passes, attachments, load_store_infos,
                                 subpasses);
     }
 
-    Framebuffer& ResourceCache::request_framebuffer(const RenderTarget& render_target, const RenderPass& render_pass)
+    Framebuffer &ResourceCache::request_framebuffer(const RenderTarget &render_target, const RenderPass &render_pass)
     {
         return request_resource(device, recorder, framebuffer_mutex, state.framebuffers, render_target, render_pass);
     }
@@ -121,8 +121,8 @@ namespace vkb
         state.compute_pipelines.clear();
     }
 
-    void ResourceCache::update_descriptor_sets(const std::vector<ImageView>& old_views,
-                                               const std::vector<ImageView>& new_views)
+    void ResourceCache::update_descriptor_sets(const std::vector<ImageView> &old_views,
+                                               const std::vector<ImageView> &new_views)
     {
         // Find descriptor sets referring to the old image view
         std::vector<VkWriteDescriptorSet> set_updates;
@@ -130,25 +130,25 @@ namespace vkb
 
         for (size_t i = 0; i < old_views.size(); ++i)
         {
-            auto& old_view = old_views[i];
-            auto& new_view = new_views[i];
+            auto &old_view = old_views[i];
+            auto &new_view = new_views[i];
 
-            for (auto& kd_pair : state.descriptor_sets)
+            for (auto &kd_pair : state.descriptor_sets)
             {
-                auto& key = kd_pair.first;
-                auto& descriptor_set = kd_pair.second;
+                auto &key = kd_pair.first;
+                auto &descriptor_set = kd_pair.second;
 
-                auto& image_infos = descriptor_set.get_image_infos();
+                auto &image_infos = descriptor_set.get_image_infos();
 
-                for (auto& ba_pair : image_infos)
+                for (auto &ba_pair : image_infos)
                 {
-                    auto& binding = ba_pair.first;
-                    auto& array = ba_pair.second;
+                    auto &binding = ba_pair.first;
+                    auto &array = ba_pair.second;
 
-                    for (auto& ai_pair : array)
+                    for (auto &ai_pair : array)
                     {
-                        auto& array_element = ai_pair.first;
-                        auto& image_info = ai_pair.second;
+                        auto &array_element = ai_pair.first;
+                        auto &image_info = ai_pair.second;
 
                         if (image_info.imageView == old_view.GetHandle())
                         {
@@ -186,12 +186,12 @@ namespace vkb
 
         if (!set_updates.empty())
         {
-            vkUpdateDescriptorSets(device.logicalDevice, to_u32(set_updates.size()), set_updates.data(),
+            vkUpdateDescriptorSets(device.GetHandle(), to_u32(set_updates.size()), set_updates.data(),
                                    0, nullptr);
         }
 
         // Delete old entries (moved out descriptor sets)
-        for (auto& match : matches)
+        for (auto &match : matches)
         {
             // Move out of the map
             auto it = state.descriptor_sets.find(match);
@@ -224,7 +224,7 @@ namespace vkb
         clear_framebuffers();
     }
 
-    const ResourceCacheState& ResourceCache::get_internal_state() const
+    const ResourceCacheState &ResourceCache::get_internal_state() const
     {
         return state;
     }

@@ -1,4 +1,4 @@
-set(TARGET_NAME RuntimeCore)
+set(TARGET_NAME Core)
 
 Include(${CMAKE_DIR}/LibBase.cmake)
 

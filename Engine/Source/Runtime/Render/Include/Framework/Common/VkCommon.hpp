@@ -9,16 +9,19 @@
 #include "VkError.hpp"
 
 #include <volk.h>
-
 #include <type_traits>
 #include <vk_mem_alloc.h>
+
+// #include "Framework/Common/VkHelpers.hpp"
+// #include "Framework/Common/Optional.hpp"
+// #include "Framework/Common/VkCommon.hpp
 
 template <typename T>
 constexpr VkObjectType GetVkObjectType();
 
 #define DEFINE_VK_OBJECT_TYPE(Type, ObjectType) \
-	template <>                                 \
-	constexpr VkObjectType GetVkObjectType<Type>() { return ObjectType; }
+    template <>                                 \
+    constexpr VkObjectType GetVkObjectType<Type>() { return ObjectType; }
 
 DEFINE_VK_OBJECT_TYPE(VkInstance, VK_OBJECT_TYPE_INSTANCE)
 DEFINE_VK_OBJECT_TYPE(VkPhysicalDevice, VK_OBJECT_TYPE_PHYSICAL_DEVICE)
@@ -45,6 +48,7 @@ DEFINE_VK_OBJECT_TYPE(VkDescriptorPool, VK_OBJECT_TYPE_DESCRIPTOR_POOL)
 DEFINE_VK_OBJECT_TYPE(VkDescriptorSet, VK_OBJECT_TYPE_DESCRIPTOR_SET)
 DEFINE_VK_OBJECT_TYPE(VkFramebuffer, VK_OBJECT_TYPE_FRAMEBUFFER)
 DEFINE_VK_OBJECT_TYPE(VkCommandPool, VK_OBJECT_TYPE_COMMAND_POOL)
+
 #define VK_FLAGS_NONE 0 // Custom define for better code readability
 
 #define DEFAULT_FENCE_TIMEOUT 100000000000 // Default fence timeout in nanoseconds
@@ -57,6 +61,13 @@ using BindingMap = std::map<uint32_t, std::map<uint32_t, T>>;
 
 namespace vkb
 {
+    enum class CommandBufferResetMode
+    {
+        ResetPool,
+        ResetIndividually,
+        AlwaysAllocate,
+    };
+
     /**
      * @brief Helper function to determine if a Vulkan format is depth only.
      * @param format Vulkan format to check.
@@ -144,4 +155,145 @@ namespace vkb
         VkPhysicalDevice gpu, const VkImageCreateInfo& create_info);
 
     VkImageCompressionPropertiesEXT query_applied_compression(VkDevice device, VkImage image);
+
+    /**
+     * @brief Image memory barrier structure used to define
+     *        memory access for an image view during command recording.
+     */
+
+    struct ImageMemoryBarrier
+    {
+        VkPipelineStageFlags src_stage_mask{VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT};
+
+        VkPipelineStageFlags dst_stage_mask{VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
+
+        VkAccessFlags src_access_mask{0};
+
+        VkAccessFlags dst_access_mask{0};
+
+        VkImageLayout old_layout{VK_IMAGE_LAYOUT_UNDEFINED};
+
+        VkImageLayout new_layout{VK_IMAGE_LAYOUT_UNDEFINED};
+
+        uint32_t src_queue_family{VK_QUEUE_FAMILY_IGNORED};
+
+        uint32_t dst_queue_family{VK_QUEUE_FAMILY_IGNORED};
+    };
+
+    /**
+     * @brief Buffer memory barrier structure used to define
+     *        memory access for a buffer during command recording.
+     */
+    struct BufferMemoryBarrier
+    {
+        VkPipelineStageFlags src_stage_mask{VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT};
+
+        VkPipelineStageFlags dst_stage_mask{VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
+
+        VkAccessFlags src_access_mask{0};
+
+        VkAccessFlags dst_access_mask{0};
+    };
+
+    /**
+     * @brief Put an image memory barrier for a layout transition of an image, using explicitly give transition parameters.
+     * @param command_buffer The VkCommandBuffer to record the barrier.
+     * @param image The VkImage to transition.
+     * @param src_stage_mask The VkPipelineStageFlags to use as source.
+     * @param dst_stage_mask The VkPipelineStageFlags to use as destination.
+     * @param src_access_mask The VkAccessFlags to use as source.
+     * @param dst_access_mask The VkAccessFlags to use as destination.
+     * @param old_layout The VkImageLayout to transition from.
+     * @param new_layout The VkImageLayout to transition to.
+     * @param subresource_range The VkImageSubresourceRange to use with the transition.
+     */
+    void image_layout_transition(VkCommandBuffer command_buffer,
+                                 VkImage image,
+                                 VkPipelineStageFlags src_stage_mask,
+                                 VkPipelineStageFlags dst_stage_mask,
+                                 VkAccessFlags src_access_mask,
+                                 VkAccessFlags dst_access_mask,
+                                 VkImageLayout old_layout,
+                                 VkImageLayout new_layout,
+                                 VkImageSubresourceRange const& subresource_range);
+
+    /**
+     * @brief Put an image memory barrier for a layout transition of an image, on a given subresource range.
+     *
+     * The src_stage_mask, dst_stage_mask, src_access_mask, and dst_access_mask used are determined from old_layout and new_layout.
+     *
+     * @param command_buffer The VkCommandBuffer to record the barrier.
+     * @param image The VkImage to transition.
+     * @param old_layout The VkImageLayout to transition from.
+     * @param new_layout The VkImageLayout to transition to.
+     * @param subresource_range The VkImageSubresourceRange to use with the transition.
+     */
+    void image_layout_transition(VkCommandBuffer command_buffer,
+                                 VkImage image,
+                                 VkImageLayout old_layout,
+                                 VkImageLayout new_layout,
+                                 VkImageSubresourceRange const& subresource_range);
+
+    /**
+     * @brief Put an image memory barrier for a layout transition of an image, on a fixed subresource with first mip level and layer.
+     *
+     * The src_stage_mask, dst_stage_mask, src_access_mask, and dst_access_mask used are determined from old_layout and new_layout.
+     *
+     * @param command_buffer The VkCommandBuffer to record the barrier.
+     * @param image The VkImage to transition.
+     * @param old_layout The VkImageLayout to transition from.
+     * @param new_layout The VkImageLayout to transition to.
+     */
+    void image_layout_transition(VkCommandBuffer command_buffer,
+                                 VkImage image,
+                                 VkImageLayout old_layout,
+                                 VkImageLayout new_layout);
+
+    /**
+     * @brief Put an image memory barrier for a layout transition of a vector of images, with a given subresource range per image.
+     *
+     * The src_stage_mask, dst_stage_mask, src_access_mask, and dst_access_mask used are determined from old_layout and new_layout.
+     *
+     * @param command_buffer The VkCommandBuffer to record the barrier.
+     * @param imagesAndRanges The images to transition, with accompanying subresource ranges.
+     * @param old_layout The VkImageLayout to transition from.
+     * @param new_layout The VkImageLayout to transition to.
+     */
+    void image_layout_transition(VkCommandBuffer command_buffer,
+                                 std::vector<std::pair<VkImage, VkImageSubresourceRange>> const& imagesAndRanges,
+                                 VkImageLayout old_layout,
+                                 VkImageLayout new_layout);
+
+    /**
+     * @brief Load and store info for a render pass attachment.
+     */
+    struct LoadStoreInfo
+    {
+        VkAttachmentLoadOp load_op = VK_ATTACHMENT_LOAD_OP_CLEAR;
+
+        VkAttachmentStoreOp store_op = VK_ATTACHMENT_STORE_OP_STORE;
+    };
+
+    namespace gbuffer
+    {
+        /**
+         * @return Load store info to load all and store only the swapchain
+         */
+        std::vector<LoadStoreInfo> get_load_all_store_swapchain();
+
+        /**
+         * @return Load store info to clear all and store only the swapchain
+         */
+        std::vector<LoadStoreInfo> get_clear_all_store_swapchain();
+
+        /**
+         * @return Load store info to clear and store all images
+         */
+        std::vector<LoadStoreInfo> get_clear_store_all();
+
+        /**
+         * @return Default clear values for the G-buffer
+         */
+        std::vector<VkClearValue> get_clear_value();
+    } // namespace gbuffer
 }

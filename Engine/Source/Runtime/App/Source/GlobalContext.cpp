@@ -4,17 +4,16 @@
 
 RuntimeGlobalContext GRuntimeGlobalContext;
 
-void RuntimeGlobalContext::startSystems(const std::string &config_file_path)
+void RuntimeGlobalContext::StartSystems(const std::string& config_file_path)
 {
-    windowSystem = std::make_shared<WindowSystem>();
-    WindowCreateInfo create_info;
-    windowSystem->initialize(create_info);
-
-    m_render_system = std::make_shared<RenderSystem>();
-    m_render_system->InitVulkan();
-    m_render_system->prepare();
+    vkb::Window::Properties window_properties;
+    window_properties.title = "CyREngine";
+    windowSystem = std::make_shared<WindowSystem>(window_properties);
+    renderSystem = std::make_shared<RenderSystem>();
 }
 
-void RuntimeGlobalContext::shutdownSystems()
+void RuntimeGlobalContext::ShutdownSystems()
 {
+    renderSystem.reset();
+    windowSystem.reset();
 }

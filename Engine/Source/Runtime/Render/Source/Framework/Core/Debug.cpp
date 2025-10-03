@@ -19,6 +19,8 @@
 
 #include <glm/gtc/type_ptr.hpp>
 #include <unordered_map>
+#include "Framework/Core/CommandBuffer.hpp"
+#include "Framework/Core/VulkanDevice.hpp"
 
 namespace vkb
 {
@@ -174,31 +176,30 @@ namespace vkb
 		vkCmdDebugMarkerInsertEXT(command_buffer, &marker_info);
 	}
 
-	// ScopedDebugLabel::ScopedDebugLabel(const DebugUtils &debug_utils, VkCommandBuffer command_buffer,
-	//                                    const char *name, glm::vec4 color) :
-	//     debug_utils{&debug_utils},
-	//     command_buffer{VK_NULL_HANDLE}
-	// {
-	// 	if (name && *name != '\0')
-	// 	{
-	// 		assert(command_buffer != VK_NULL_HANDLE);
-	// 		this->command_buffer = command_buffer;
+	ScopedDebugLabel::ScopedDebugLabel(const DebugUtils &debug_utils, VkCommandBuffer command_buffer,
+									   const char *name, glm::vec4 color) : debug_utils{&debug_utils},
+																			command_buffer{VK_NULL_HANDLE}
+	{
+		if (name && *name != '\0')
+		{
+			assert(command_buffer != VK_NULL_HANDLE);
+			this->command_buffer = command_buffer;
 
-	// 		debug_utils.cmd_begin_label(command_buffer, name, color);
-	// 	}
-	// }
+			debug_utils.cmd_begin_label(command_buffer, name, color);
+		}
+	}
 
-	// ScopedDebugLabel::ScopedDebugLabel(const vkb::core::CommandBufferC &command_buffer, const char *name, glm::vec4 color) :
-	//     ScopedDebugLabel{command_buffer.get_device().get_debug_utils(), command_buffer.get_handle(), name, color}
-	// {
-	// }
+	ScopedDebugLabel::ScopedDebugLabel(const vkb::CommandBuffer &command_buffer, const char *name, glm::vec4 color)
+		: ScopedDebugLabel{command_buffer.GetDevice().get_debug_utils(), command_buffer.GetHandle(), name, color}
+	{
+	}
 
-	// ScopedDebugLabel::~ScopedDebugLabel()
-	// {
-	// 	if (command_buffer != VK_NULL_HANDLE)
-	// 	{
-	// 		debug_utils->cmd_end_label(command_buffer);
-	// 	}
-	// }
+	ScopedDebugLabel::~ScopedDebugLabel()
+	{
+		if (command_buffer != VK_NULL_HANDLE)
+		{
+			debug_utils->cmd_end_label(command_buffer);
+		}
+	}
 
 } // namespace vkb

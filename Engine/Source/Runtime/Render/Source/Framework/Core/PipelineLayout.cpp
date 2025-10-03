@@ -111,7 +111,7 @@ namespace vkb
 		create_info.pPushConstantRanges = push_constant_ranges.data();
 
 		// Create the Vulkan pipeline layout handle
-		auto result = vkCreatePipelineLayout(device.logicalDevice, &create_info, nullptr, &handle);
+		auto result = vkCreatePipelineLayout(device.GetHandle(), &create_info, nullptr, &handle);
 
 		if (result != VK_SUCCESS)
 		{
@@ -134,7 +134,7 @@ namespace vkb
 		// Destroy pipeline layout
 		if (handle != VK_NULL_HANDLE)
 		{
-			vkDestroyPipelineLayout(device.logicalDevice, handle, nullptr);
+			vkDestroyPipelineLayout(device.GetHandle(), handle, nullptr);
 		}
 	}
 

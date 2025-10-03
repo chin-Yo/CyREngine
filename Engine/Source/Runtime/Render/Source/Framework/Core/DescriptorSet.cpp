@@ -64,8 +64,8 @@ namespace vkb
 				{
 					auto &buffer_info = element_it.second;
 
-					size_t uniform_buffer_range_limit = device.properties.limits.maxUniformBufferRange;
-					size_t storage_buffer_range_limit = device.properties.limits.maxStorageBufferRange;
+					size_t uniform_buffer_range_limit = device.get_gpu().get_properties().limits.maxUniformBufferRange;
+					size_t storage_buffer_range_limit = device.get_gpu().get_properties().limits.maxStorageBufferRange;
 
 					size_t buffer_range_limit = static_cast<size_t>(buffer_info.range);
 
@@ -183,7 +183,7 @@ namespace vkb
 		// Perform the Vulkan call to update the DescriptorSet by executing the write operations
 		if (!write_operations.empty())
 		{
-			vkUpdateDescriptorSets(device.logicalDevice,
+			vkUpdateDescriptorSets(device.GetHandle(),
 								   to_u32(write_operations.size()),
 								   write_operations.data(),
 								   0,
@@ -200,7 +200,7 @@ namespace vkb
 
 	void DescriptorSet::apply_writes() const
 	{
-		vkUpdateDescriptorSets(device.logicalDevice,
+		vkUpdateDescriptorSets(device.GetHandle(),
 							   to_u32(write_descriptor_sets.size()),
 							   write_descriptor_sets.data(),
 							   0,

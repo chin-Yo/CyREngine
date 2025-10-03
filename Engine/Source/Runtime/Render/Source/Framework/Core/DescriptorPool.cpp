@@ -59,7 +59,7 @@ namespace vkb
 		// Destroy all descriptor pools
 		for (auto pool : pools)
 		{
-			vkDestroyDescriptorPool(device.logicalDevice, pool, nullptr);
+			vkDestroyDescriptorPool(device.GetHandle(), pool, nullptr);
 		}
 	}
 
@@ -68,7 +68,7 @@ namespace vkb
 		// Reset all descriptor pools
 		for (auto pool : pools)
 		{
-			vkResetDescriptorPool(device.logicalDevice, pool, 0);
+			vkResetDescriptorPool(device.GetHandle(), pool, 0);
 		}
 
 		// Clear internal tracking of descriptor set allocations
@@ -107,7 +107,7 @@ namespace vkb
 		VkDescriptorSet handle = VK_NULL_HANDLE;
 
 		// Allocate a new descriptor set from the current pool
-		auto result = vkAllocateDescriptorSets(device.logicalDevice, &alloc_info, &handle);
+		auto result = vkAllocateDescriptorSets(device.GetHandle(), &alloc_info, &handle);
 
 		if (result != VK_SUCCESS)
 		{
@@ -136,7 +136,7 @@ namespace vkb
 		auto desc_pool_index = it->second;
 
 		// Free descriptor set from the pool
-		vkFreeDescriptorSets(device.logicalDevice, pools[desc_pool_index], 1, &descriptor_set);
+		vkFreeDescriptorSets(device.GetHandle(), pools[desc_pool_index], 1, &descriptor_set);
 
 		// Remove descriptor set mapping to the pool
 		set_pool_mapping.erase(it);
@@ -177,7 +177,7 @@ namespace vkb
 			VkDescriptorPool handle = VK_NULL_HANDLE;
 
 			// Create the Vulkan descriptor pool
-			auto result = vkCreateDescriptorPool(device.logicalDevice, &create_info, nullptr, &handle);
+			auto result = vkCreateDescriptorPool(device.GetHandle(), &create_info, nullptr, &handle);
 
 			if (result != VK_SUCCESS)
 			{

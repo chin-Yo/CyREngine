@@ -19,6 +19,7 @@
 
 #include "Framework/Core/RenderPass.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
+#include "Framework/Rendering/RenderTarget.hpp"
 
 namespace vkb
 {
@@ -27,17 +28,17 @@ namespace vkb
         return handle;
     }
 
-    const VkExtent2D& Framebuffer::get_extent() const
+    const VkExtent2D &Framebuffer::get_extent() const
     {
         return extent;
     }
 
-    Framebuffer::Framebuffer(VulkanDevice& device, const RenderTarget& render_target, const RenderPass& render_pass)
+    Framebuffer::Framebuffer(VulkanDevice &device, const RenderTarget &render_target, const RenderPass &render_pass)
         : device{device}, extent{render_target.get_extent()}
     {
         std::vector<VkImageView> attachments;
 
-        for (auto& view : render_target.get_views())
+        for (auto &view : render_target.get_views())
         {
             attachments.emplace_back(view.GetHandle());
         }
@@ -51,7 +52,7 @@ namespace vkb
         create_info.height = extent.height;
         create_info.layers = 1;
 
-        auto result = vkCreateFramebuffer(device.logicalDevice, &create_info, nullptr, &handle);
+        auto result = vkCreateFramebuffer(device.GetHandle(), &create_info, nullptr, &handle);
 
         if (result != VK_SUCCESS)
         {
@@ -59,7 +60,7 @@ namespace vkb
         }
     }
 
-    Framebuffer::Framebuffer(Framebuffer&& other)
+    Framebuffer::Framebuffer(Framebuffer &&other)
         : device{other.device}, handle{other.handle}, extent{other.extent}
     {
         other.handle = VK_NULL_HANDLE;
@@ -69,7 +70,7 @@ namespace vkb
     {
         if (handle != VK_NULL_HANDLE)
         {
-            vkDestroyFramebuffer(device.logicalDevice, handle, nullptr);
+            vkDestroyFramebuffer(device.GetHandle(), handle, nullptr);
         }
     }
 } // namespace vkb

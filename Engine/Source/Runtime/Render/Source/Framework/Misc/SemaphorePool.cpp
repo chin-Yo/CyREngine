@@ -31,7 +31,7 @@ namespace vkb
 		// Destroy all semaphores
 		for (VkSemaphore semaphore : semaphores)
 		{
-			vkDestroySemaphore(device.logicalDevice, semaphore, nullptr);
+			vkDestroySemaphore(device.GetHandle(), semaphore, nullptr);
 		}
 
 		semaphores.clear();
@@ -52,7 +52,7 @@ namespace vkb
 
 		VkSemaphoreCreateInfo create_info{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
 
-		VkResult result = vkCreateSemaphore(device.logicalDevice, &create_info, nullptr, &semaphore);
+		VkResult result = vkCreateSemaphore(device.GetHandle(), &create_info, nullptr, &semaphore);
 
 		if (result != VK_SUCCESS)
 		{
@@ -80,7 +80,7 @@ namespace vkb
 
 		VkSemaphoreCreateInfo create_info{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
 
-		VkResult result = vkCreateSemaphore(device.logicalDevice, &create_info, nullptr, &semaphore);
+		VkResult result = vkCreateSemaphore(device.GetHandle(), &create_info, nullptr, &semaphore);
 
 		if (result != VK_SUCCESS)
 		{

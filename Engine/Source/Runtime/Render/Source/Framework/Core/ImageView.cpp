@@ -18,15 +18,13 @@
 #include "Framework/Core/ImageView.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
 
-
 namespace vkb
 {
-    ImageView::ImageView(Image& img, VkImageViewType view_type, VkFormat format,
+    ImageView::ImageView(Image &img, VkImageViewType view_type, VkFormat format,
                          uint32_t mip_level, uint32_t array_layer,
-                         uint32_t n_mip_levels, uint32_t n_array_layers) :
-        VulkanResource{VK_NULL_HANDLE, &img.GetDevice()},
-        image{&img},
-        format{format}
+                         uint32_t n_mip_levels, uint32_t n_array_layers) : VulkanResource{VK_NULL_HANDLE, &img.GetDevice()},
+                                                                           image{&img},
+                                                                           format{format}
     {
         if (format == VK_FORMAT_UNDEFINED)
         {
@@ -53,7 +51,7 @@ namespace vkb
         view_info.format = format;
         view_info.subresourceRange = subresource_range;
 
-        auto result = vkCreateImageView(GetDevice().logicalDevice, &view_info, nullptr, &GetHandle());
+        auto result = vkCreateImageView(GetDevice().GetHandle(), &view_info, nullptr, &GetHandle());
 
         if (result != VK_SUCCESS)
         {
@@ -65,14 +63,13 @@ namespace vkb
         image->get_views().emplace(this);
     }
 
-    ImageView::ImageView(ImageView&& other) :
-        VulkanResource{std::move(other)},
-        image{other.image},
-        format{other.format},
-        subresource_range{other.subresource_range}
+    ImageView::ImageView(ImageView &&other) : VulkanResource{std::move(other)},
+                                              image{other.image},
+                                              format{other.format},
+                                              subresource_range{other.subresource_range}
     {
         // Remove old view from image set and add this new one
-        auto& views = image->get_views();
+        auto &views = image->get_views();
         views.erase(&other);
         views.emplace(this);
     }
@@ -81,17 +78,17 @@ namespace vkb
     {
         if (HasDevice())
         {
-            vkDestroyImageView(GetDevice().logicalDevice, GetHandle(), nullptr);
+            vkDestroyImageView(GetDevice().GetHandle(), GetHandle(), nullptr);
         }
     }
 
-    const Image& ImageView::get_image() const
+    const Image &ImageView::get_image() const
     {
         assert(image && "Image view is referring an invalid image");
         return *image;
     }
 
-    void ImageView::set_image(Image& img)
+    void ImageView::set_image(Image &img)
     {
         image = &img;
     }

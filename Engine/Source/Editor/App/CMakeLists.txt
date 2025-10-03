@@ -16,7 +16,7 @@ file(GLOB_RECURSE LIB_HEADERS
 )
 
 add_executable(${TARGET_NAME} ${LIB_SOURCES} ${LIB_HEADERS})
-
+target_compile_features(${TARGET_NAME} PRIVATE cxx_std_17)
 target_include_directories(${TARGET_NAME} PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/Include
     ${RUNTIME_DIR}
@@ -25,9 +25,13 @@ target_include_directories(${TARGET_NAME} PUBLIC
     #${THIRD_PARTY_DIR}/spdlog/include
 )
 
-target_link_libraries(${TARGET_NAME} PRIVATE RuntimeApp)
+set_source_files_properties(Source/main.cpp PROPERTIES
+    COMPILE_DEFINITIONS VOLK_IMPLEMENTATION
+)
+
+target_link_libraries(${TARGET_NAME} PRIVATE Application)
 target_link_libraries(${TARGET_NAME} PRIVATE glfw)
-target_link_libraries(${TARGET_NAME} PRIVATE RuntimeCore)
+target_link_libraries(${TARGET_NAME} PRIVATE Core)
 
 
 set_property(TARGET ${TARGET_NAME} PROPERTY VS_GLOBAL_DisableExternalDependencies true)

@@ -16,7 +16,7 @@
  */
 
 #include "Framework/Misc/ResourceReplay.hpp"
-
+#include "Framework/\Rendering/RenderTarget.hpp"
 #include "Framework/Misc/ResourceCache.hpp"
 #include "Logging/Logger.hpp"
 

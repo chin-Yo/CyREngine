@@ -22,7 +22,7 @@
 #include "Framework/Core/VulkanResource.hpp"
 #include "Framework/Common/VkCommon.hpp"
 #include <volk.h>
-#include <vulkan/vulkan.hpp>
+
 
 namespace vkb
 {
@@ -240,9 +240,9 @@ namespace vkb
          * @todo create `updateTypedAligned` which has an additional argument specifying the required GPU alignment of the elements of the array.
          */
         template <class T>
-        size_t updateTyped(const vk::ArrayProxy<T>& object, size_t offset = 0)
+        size_t updateTyped(const T* object, size_t count, size_t offset = 0)
         {
-            return update(reinterpret_cast<const uint8_t*>(object.data()), object.size() * sizeof(T), offset);
+            return update(reinterpret_cast<const uint8_t*>(object), count * sizeof(T), offset);
         }
 
     protected:

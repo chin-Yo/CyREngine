@@ -7,24 +7,25 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/async.h>
+#include "spdlog/fmt/fmt.h"
 
 enum class LogLevel
 {
-    TRACE = spdlog::level::trace,
-    DEBUG = spdlog::level::debug,
-    INFO = spdlog::level::info,
-    WARN = spdlog::level::warn,
-    _ERROR = spdlog::level::err,
-    CRITICAL = spdlog::level::critical,
-    OFF = spdlog::level::off
+    LogTRACE = spdlog::level::trace,
+    LogDEBUG = spdlog::level::debug,
+    LogINFO = spdlog::level::info,
+    LogWARN = spdlog::level::warn,
+    LogERROR = spdlog::level::err,
+    LogCRITICAL = spdlog::level::critical,
+    LogOFF = spdlog::level::off
 };
 
 class Logger
 {
 public:
-    static void Init(const std::string &name = "Logger",
-                     LogLevel level = LogLevel::INFO,
-                     const std::string &filepath = "",
+    static void Init(const std::string& name = "Logger",
+                     LogLevel level = LogLevel::LogINFO,
+                     const std::string& filepath = "",
                      bool async = false,
                      size_t max_file_size = 1024 * 1024 * 5,
                      size_t max_files = 3);

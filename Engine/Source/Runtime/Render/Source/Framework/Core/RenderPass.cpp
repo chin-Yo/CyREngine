@@ -619,12 +619,11 @@ namespace vkb
         }
     }
 
-    RenderPass::RenderPass(VulkanDevice& device, vks::RenderPassBuilder& builder) : VulkanResource{
-            VK_NULL_HANDLE, &device
-        },
-        color_output_count{}
+    RenderPass::RenderPass(VulkanDevice& device, VkRenderPass renderPass) : VulkanResource{
+        VK_NULL_HANDLE, &device
+    }
     {
-        SetHandle(builder.build().get());
+        SetHandle(renderPass);
     }
 
     RenderPass::RenderPass(RenderPass&& other) : VulkanResource{std::move(other)},
@@ -674,7 +673,22 @@ namespace vks
     RenderPass::RenderPass(RenderPass&& other) noexcept
         : m_device(other.m_device), m_renderPass(other.m_renderPass)
     {
-        other.m_renderPass = VK_NULL_HANDLE; // 避免双重释放
+        other.m_renderPass = VK_NULL_HANDLE;
+    }
+
+    RenderPass& RenderPass::operator=(RenderPass&& other) noexcept
+    {
+        if (this != &other)
+        {
+            if (m_renderPass != VK_NULL_HANDLE)
+            {
+                vkDestroyRenderPass(m_device, m_renderPass, nullptr);
+            }
+            m_device = other.m_device;
+            m_renderPass = other.m_renderPass;
+            other.m_renderPass = VK_NULL_HANDLE;
+        }
+        return *this;
     }
 
     RenderPassBuilder::RenderPassBuilder(VkDevice device) : m_device(device)
@@ -778,6 +792,26 @@ namespace vks
 
         // 将创建好的 VkRenderPass 和 VkDevice 传递给 RAII 包装类
         return RenderPass(m_device, renderPass);
+    }
+
+    VkRenderPass RenderPassBuilder::buildPtr()
+    {
+        VkRenderPassCreateInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo.attachmentCount = static_cast<uint32_t>(m_attachments.size());
+        renderPassInfo.pAttachments = m_attachments.data();
+        renderPassInfo.subpassCount = static_cast<uint32_t>(m_subpasses.size());
+        renderPassInfo.pSubpasses = m_subpasses.data();
+        renderPassInfo.dependencyCount = static_cast<uint32_t>(m_dependencies.size());
+        renderPassInfo.pDependencies = m_dependencies.data();
+
+        VkRenderPass renderPass;
+        if (vkCreateRenderPass(m_device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to create render pass!");
+        }
+
+        return renderPass;
     }
 
     VkRenderPassCreateInfo RenderPassBuilder::buildCreateInfo()

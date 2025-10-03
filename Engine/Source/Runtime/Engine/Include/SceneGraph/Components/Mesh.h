@@ -25,40 +25,73 @@
 #include "SceneGraph/Component.h"
 #include "SceneGraph/Components/AABB.h"
 
+/**
+ * @brief The structure of a meshlet for mesh shader
+ */
+struct Meshlet
+{
+    uint32_t vertices[64];
+    uint32_t indices[126];
+    uint32_t vertex_count;
+    uint32_t index_count;
+};
+
+/**
+ * @brief The structure of a vertex
+ */
+struct Vertex
+{
+    glm::vec3 pos;
+    glm::vec3 normal;
+    glm::vec2 uv;
+    glm::vec4 joint0;
+    glm::vec4 weight0;
+    glm::vec3 color;
+};
+
+/**
+ * @brief The structure of a vertex for storage buffer
+ * Simplified to position and normal for easier alignment
+ */
+struct AlignedVertex
+{
+    glm::vec4 pos;
+    glm::vec4 normal;
+};
 
 namespace vkb
 {
-namespace sg
-{
-class SubMesh;
+    namespace sg
+    {
+        class SubMesh;
 
-class Mesh : public Component
-{
-  public:
-	Mesh(const std::string &name);
+        class Mesh : public Component
+        {
+        public:
+            Mesh(const std::string& name);
 
-	virtual ~Mesh() = default;
+            virtual ~Mesh() = default;
 
-	void update_bounds(const std::vector<glm::vec3> &vertex_data, const std::vector<uint16_t> &index_data = {});
+            void update_bounds(const std::vector<glm::vec3>& vertex_data, const std::vector<uint16_t>& index_data = {});
 
-	virtual std::type_index get_type() override;
+            virtual std::type_index get_type() override;
 
-	const AABB &get_bounds() const;
+            const AABB& get_bounds() const;
 
-	void add_submesh(SubMesh &submesh);
+            void add_submesh(SubMesh& submesh);
 
-	const std::vector<SubMesh *> &get_submeshes() const;
+            const std::vector<SubMesh*>& get_submeshes() const;
 
-	void add_node(Node &node);
+            void add_node(Node& node);
 
-	const std::vector<Node *> &get_nodes() const;
+            const std::vector<Node*>& get_nodes() const;
 
-  private:
-	AABB bounds;
+        private:
+            AABB bounds;
 
-	std::vector<SubMesh *> submeshes;
+            std::vector<SubMesh*> submeshes;
 
-	std::vector<Node *> nodes;
-};
-}        // namespace sg
-}        // namespace vkb
+            std::vector<Node*> nodes;
+        };
+    } // namespace sg
+} // namespace vkb

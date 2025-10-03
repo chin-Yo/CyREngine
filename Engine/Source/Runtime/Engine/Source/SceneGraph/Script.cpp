@@ -17,37 +17,38 @@
 
 #include "SceneGraph/Script.h"
 
+
 namespace vkb
 {
-namespace sg
-{
-Script::Script(const std::string &name) :
-    Component{name}
-{}
+    namespace sg
+    {
+        Script::Script(const std::string& name) :
+            Component{name}
+        {
+        }
 
-std::type_index Script::get_type()
-{
-	return typeid(Script);
-}
+        std::type_index Script::get_type()
+        {
+            return typeid(Script);
+        }
 
-void Script::input_event(const InputEvent & /*input_event*/)
-{
-}
+        void Script::input_event(const InputEvent& /*input_event*/)
+        {
+        }
 
-void Script::resize(uint32_t /*width*/, uint32_t /*height*/)
-{
-}
+        void Script::resize(uint32_t /*width*/, uint32_t /*height*/)
+        {
+        }
 
-NodeScript::NodeScript(Node &node, const std::string &name) :
-    Script{name},
-    node{node}
-{
-}
+        NodeScript::NodeScript(Node& node, const std::string& name) :
+            Script{name},
+            node{node}
+        {
+        }
 
-Node &NodeScript::get_node()
-{
-	return node;
-}
-
-}        // namespace sg
-}        // namespace vkb
+        Node& NodeScript::get_node()
+        {
+            return node;
+        }
+    } // namespace sg
+} // namespace vkb

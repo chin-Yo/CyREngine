@@ -25,6 +25,10 @@ target_include_directories(${TARGET_NAME} PUBLIC
     #${THIRD_PARTY_DIR}/spdlog/include
 )
 
+set_source_files_properties(Source/main.cpp PROPERTIES
+    COMPILE_DEFINITIONS VOLK_IMPLEMENTATION
+)
+
 target_link_libraries(${TARGET_NAME} PRIVATE Application)
 target_link_libraries(${TARGET_NAME} PRIVATE glfw)
 target_link_libraries(${TARGET_NAME} PRIVATE Core)

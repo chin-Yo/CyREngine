@@ -13,25 +13,25 @@
 #include "eventpp/callbacklist.h"
 #include "Framework/Core/Sampler.hpp"
 #include "Framework/Core/VulkanInitializers.hpp"
+#include "Framework/Rendering/Subpass.hpp"
 
 
-class UIOverlay
+class EditorUIManager
 {
 public:
-    vkb::VulkanDevice *vulkanDevice{nullptr};
+    vkb::VulkanDevice& vulkanDevice;
 
     vks::DescriptorPool descriptorPool;
 
-    UIOverlay(vkb::VulkanDevice *device);
-    ~UIOverlay();
+    EditorUIManager(vkb::VulkanDevice& device);
+    ~EditorUIManager();
 
-    void InitImGui(VkInstance instance, VkRenderPass renderPass, VkQueue queue, uint32_t MinImageCount, uint32_t ImageCount);
+    void Prepare(VkRenderPass renderPass, VkQueue queue, uint32_t MinImageCount,
+                 uint32_t ImageCount);
 
-    void preparePipeline(const VkPipelineCache pipelineCache, const VkRenderPass renderPass, const VkFormat colorFormat, const VkFormat depthFormat);
-    void prepareResources();
+    void Draw(VkCommandBuffer command_buffer);
 
     bool update();
-    void draw(bool Off);
     void resize(uint32_t width, uint32_t height);
 
     void freeResources();
@@ -39,8 +39,9 @@ public:
     eventpp::CallbackList<void(const ImVec2& PortSize)> OnViewportChange;
     ImVec2 m_ViewportSize{0, 0};
     bool m_ViewportResized = false;
-    vkb::Sampler *OffScreenSampler = nullptr;
-    VkDescriptorSet m_DescriptorSet = VK_NULL_HANDLE;
+    vkb::Sampler* OffScreenSampler = nullptr;
+    VkRenderPass render_pass{VK_NULL_HANDLE};
+
 protected:
     void RenderMenuBar();
     void RenderHierarchy();

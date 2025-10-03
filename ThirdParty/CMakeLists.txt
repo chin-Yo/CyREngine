@@ -177,6 +177,32 @@ set(KTX_SOURCES
     ${KTX_DIR}/lib/vkloader.c
 )
 
+set(KTX_INCLUDE_DIRS
+    ${KTX_DIR}/include
+    ${KTX_DIR}/lib
+    ${KTX_DIR}/utils
+    ${KTX_DIR}/external    
+    ${KTX_DIR}/external/basisu/zstd
+    ${KTX_DIR}/external/basisu/transcoder
+    ${KTX_DIR}/other_include
+)
+
+add_library(ktx STATIC ${KTX_SOURCES})
+
+target_compile_definitions(ktx PUBLIC LIBKTX)
+if (WIN32)
+target_compile_definitions(ktx PUBLIC "KTX_API=__declspec(dllexport)")
+endif()
+target_compile_definitions(ktx PUBLIC KTX_FEATURE_WRITE=0)
+target_compile_definitions(ktx PUBLIC BASISD_SUPPORT_KTX2_ZSTD=0)
+target_compile_definitions(ktx PUBLIC BASISU_NO_ITERATOR_DEBUG_LEVEL)
+
+target_include_directories(ktx SYSTEM PUBLIC ${KTX_INCLUDE_DIRS})
+
+target_link_libraries(ktx PUBLIC vulkan)
+
+set_target_properties(ktx PROPERTIES FOLDER "ThirdParty" POSITION_INDEPENDENT_CODE ON)
+
 # spdlog
 if(NOT TARGET spdlog)
     option(SPDLOG_BUILD_EXAMPLE "Build SPDLOG examples" OFF)
@@ -214,3 +240,9 @@ target_link_libraries(vma INTERFACE vulkan)
 # eventpp
 set(EVENTPP_INSTALL OFF CACHE BOOL "Disable eventpp installation")
 add_subdirectory(eventpp)
+
+# ctpl
+add_library(ctpl INTERFACE)
+set(CTPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CTPL)
+#target_sources(ctpl INTERFACE ${CTPL_DIR}/ctpl_stl.h)
+target_include_directories(ctpl SYSTEM INTERFACE ${CTPL_DIR})

@@ -14,13 +14,13 @@ class RuntimeGlobalContext
 {
 public:
     // create all global systems and initialize these systems
-    void startSystems(const std::string &config_file_path);
+    void StartSystems(const std::string& config_file_path);
     // destroy all global systems
-    void shutdownSystems();
+    void ShutdownSystems();
 
 public:
     std::shared_ptr<WindowSystem> windowSystem;
-    std::shared_ptr<RenderSystem> m_render_system;
+    std::shared_ptr<RenderSystem> renderSystem;
 };
 
 extern RuntimeGlobalContext GRuntimeGlobalContext;

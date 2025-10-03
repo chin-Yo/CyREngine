@@ -2,10 +2,17 @@
 
 #include <volk.h>
 
+#include "EditorUI.hpp"
 #include "Framework/Core/Instance.hpp"
 #include "Framework/Core/VulkanDevice.hpp"
 #include "Framework/Rendering/RenderContext.hpp"
 #include "Framework/Rendering/RenderPipeline.hpp"
+
+
+namespace vkb::sg
+{
+    class PerspectiveCamera;
+}
 
 struct ApplicationOptions
 {
@@ -16,6 +23,10 @@ struct ApplicationOptions
 class RenderSystem
 {
 public:
+    RenderSystem() = default;
+    ~RenderSystem();
+
+public:
     bool Prepare(const ApplicationOptions& options);
 
     void RequestGpuFeatures(vkb::PhysicalDevice& gpu);
@@ -23,9 +34,10 @@ public:
     std::unique_ptr<vkb::Instance> CreateInstance();
 
     std::unique_ptr<vkb::VulkanDevice> CreateDevice(vkb::PhysicalDevice& gpu);
-
+    // entrance
     void Draw(vkb::CommandBuffer& command_buffer, vkb::RenderTarget& render_target);
     void Render(vkb::CommandBuffer& command_buffer);
+    // pivotal
     void DrawRenderpass(vkb::CommandBuffer& command_buffer, vkb::RenderTarget& render_target);
     void Update(float delta_time);
     void UpdateScene(float delta_time);
@@ -70,16 +82,11 @@ public:
      */
     void AddLayerSetting(VkLayerSettingEXT const& layerSetting);
 
+private:
+    vkb::sg::PerspectiveCamera* camera{};
 
-    std::unordered_map<const char*, bool> const& GetDeviceExtensions() const;
-    std::unordered_map<const char*, bool> const& GetInstanceExtensions() const;
-    std::unordered_map<const char*, bool> const& GetInstanceLayers() const;
-    std::vector<VkLayerSettingEXT> const& GetLayerSettings() const;
-    //Configuration get_configuration()
-
-
-    std::vector<VkSurfaceFormatKHR> const& GetSurfacePriorityList() const;
-    std::vector<VkSurfaceFormatKHR>& GetSurfacePriorityList();
+    std::unique_ptr<vkb::RenderPipeline> UIRenderPipeline{};
+    std::unique_ptr<vkb::RenderPipeline> CreateUIRenderpass();
 
 private: // -----------------Member
     vkb::Window* window{nullptr};
@@ -129,8 +136,8 @@ private:
      */
     // std::unique_ptr<vkb::Scene> scene;
 
-    // std::unique_ptr<vkb::Gui> gui;
-
+    std::unique_ptr<EditorUIManager> EditorUI;
+    std::unique_ptr<vkb::RenderPass> wRenderpass;
     // std::unique_ptr<vkb::stats::Stats> stats;
 
     static constexpr float STATS_VIEW_RESET_TIME{10.0f}; // 10 seconds
@@ -138,8 +145,7 @@ private:
     /**
      * @brief The Vulkan surface
      */
-    VkSurfaceKHR surface;
-
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
     /**
      * @brief A list of surface formats in order of priority (vector[0] has high priority, vector[size-1] has low priority)
      */
@@ -172,4 +178,13 @@ private:
     bool high_priority_graphics_queue{false};
 
     std::unique_ptr<vkb::DebugUtils> debug_utils;
+
+public:
+    std::unordered_map<const char*, bool> const& GetDeviceExtensions() const;
+    std::unordered_map<const char*, bool> const& GetInstanceExtensions() const;
+    std::unordered_map<const char*, bool> const& GetInstanceLayers() const;
+    std::vector<VkLayerSettingEXT> const& GetLayerSettings() const;
+    //Configuration get_configuration()
+    std::vector<VkSurfaceFormatKHR> const& GetSurfacePriorityList() const;
+    std::vector<VkSurfaceFormatKHR>& GetSurfacePriorityList();
 };

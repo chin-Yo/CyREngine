@@ -173,3 +173,133 @@ namespace vkb
         }
     }
 } // namespace vkb
+
+namespace vks
+{
+    CommandPool::CommandPool(VkDevice device, VkCommandPool commandPool)
+        : m_device(device), m_commandPool(commandPool)
+    {
+        if (m_device == VK_NULL_HANDLE || m_commandPool == VK_NULL_HANDLE)
+        {
+            LOG_WARN("Device and CommandPool handles must not be null");
+        }
+    }
+
+    CommandPool::~CommandPool()
+    {
+        destroy();
+    }
+
+    CommandPool::CommandPool(CommandPool&& other) noexcept
+        : m_device(other.m_device), m_commandPool(other.m_commandPool)
+    {
+        other.m_device = VK_NULL_HANDLE;
+        other.m_commandPool = VK_NULL_HANDLE;
+    }
+
+    CommandPool& CommandPool::operator=(CommandPool&& other) noexcept
+    {
+        if (this != &other)
+        {
+            destroy();
+            m_device = other.m_device;
+            m_commandPool = other.m_commandPool;
+            other.m_device = VK_NULL_HANDLE;
+            other.m_commandPool = VK_NULL_HANDLE;
+        }
+        return *this;
+    }
+
+    void CommandPool::destroy()
+    {
+        if (m_commandPool != VK_NULL_HANDLE)
+        {
+            vkDestroyCommandPool(m_device, m_commandPool, nullptr);
+            m_commandPool = VK_NULL_HANDLE;
+        }
+    }
+
+    std::vector<VkCommandBuffer> CommandPool::allocateCommandBuffers(uint32_t count, VkCommandBufferLevel level)
+    {
+        std::vector<VkCommandBuffer> commandBuffers(count);
+        VkCommandBufferAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.commandPool = m_commandPool;
+        allocInfo.level = level;
+        allocInfo.commandBufferCount = count;
+
+        if (vkAllocateCommandBuffers(m_device, &allocInfo, commandBuffers.data()) != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to allocate command buffers!");
+        }
+
+        return commandBuffers;
+    }
+
+    void CommandPool::freeCommandBuffers(const std::vector<VkCommandBuffer>& commandBuffers)
+    {
+        if (commandBuffers.empty())
+        {
+            return;
+        }
+        vkFreeCommandBuffers(m_device, m_commandPool, static_cast<uint32_t>(commandBuffers.size()),
+                             commandBuffers.data());
+    }
+
+    void CommandPool::reset(VkCommandPoolResetFlags flags)
+    {
+        VkResult result = vkResetCommandPool(m_device, m_commandPool, flags);
+        if (result != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to reset command pool!");
+        }
+    }
+
+    CommandPoolBuilder::CommandPoolBuilder(VkDevice device) : m_device(device)
+    {
+        if (device == VK_NULL_HANDLE)
+        {
+            throw std::invalid_argument("Device cannot be VK_NULL_HANDLE");
+        }
+        m_createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    }
+
+    CommandPoolBuilder& CommandPoolBuilder::setQueueFamilyIndex(uint32_t queueFamilyIndex)
+    {
+        m_createInfo.queueFamilyIndex = queueFamilyIndex;
+        return *this;
+    }
+
+    CommandPoolBuilder& CommandPoolBuilder::setFlags(VkCommandPoolCreateFlags flags)
+    {
+        m_createInfo.flags = flags;
+        return *this;
+    }
+
+    CommandPoolBuilder& CommandPoolBuilder::setTransient()
+    {
+        m_createInfo.flags |= VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+        return *this;
+    }
+
+    CommandPoolBuilder& CommandPoolBuilder::setResetCommandBuffer()
+    {
+        m_createInfo.flags |= VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        return *this;
+    }
+
+    CommandPool CommandPoolBuilder::build() const
+    {
+        VkCommandPool pool = VK_NULL_HANDLE;
+        if (vkCreateCommandPool(m_device, &m_createInfo, nullptr, &pool) != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to create command pool!");
+        }
+        return CommandPool(m_device, pool);
+    }
+
+    VkCommandPoolCreateInfo CommandPoolBuilder::buildCreateInfo() const
+    {
+        return m_createInfo;
+    }
+} // namespace vks

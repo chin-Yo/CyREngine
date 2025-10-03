@@ -11,7 +11,6 @@
 #include <volk.h>
 #include <type_traits>
 #include <vk_mem_alloc.h>
-#include <vulkan/vulkan.hpp>
 
 // #include "Framework/Common/VkHelpers.hpp"
 // #include "Framework/Common/Optional.hpp"

@@ -10,7 +10,6 @@ struct EngineConfig
 {
     int MaxFPS = 60;
     bool EnableVSync = true;
-    // 可添加其他配置参数...
 };
 
 class Engine
@@ -19,7 +18,7 @@ class Engine
     friend class Editor;
 
 public:
-    void StartEngine(const std::string &ConfigFilePath);
+    void StartEngine(const std::string& ConfigFilePath);
     void ShutdownEngine();
 
     void Initialize();
@@ -39,7 +38,9 @@ protected:
 
     void CalculateFPS(float DeltaTime);
     float CalculateDeltaTime();
-    void LimitFPS(float &DeltaTime);
+    void LimitFPS(float& DeltaTime);
+
+    void SetIsIconify(bool bIsIconify);
 
 protected:
     bool isQuit = false;
@@ -51,4 +52,6 @@ protected:
     int FrameCount = 0;
     int FPS = 0;
     EngineConfig mConfig;
+
+    bool bIsMinimized = false;
 };

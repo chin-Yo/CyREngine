@@ -81,6 +81,7 @@ namespace vks
 
         // 构建 RenderPass 对象
         RenderPass build();
+        VkRenderPass buildPtr();
         VkRenderPassCreateInfo buildCreateInfo();
 
     private:
@@ -129,7 +130,7 @@ namespace vkb
                    const std::vector<LoadStoreInfo>& load_store_infos,
                    const std::vector<SubpassInfo>& subpasses);
 
-        RenderPass(VulkanDevice& device, vks::RenderPassBuilder& builder);
+        RenderPass(VulkanDevice& device, VkRenderPass renderPass);
 
         RenderPass(const RenderPass&) = delete;
 

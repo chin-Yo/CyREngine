@@ -33,9 +33,9 @@ namespace vkb
                                  const Window& window,
                                  VkPresentModeKHR present_mode,
                                  const std::vector<VkPresentModeKHR>& present_mode_priority_list,
-                                 const std::vector<VkSurfaceFormatKHR>& surface_format_priority_list) : device{device},
-        window{window}, queue{device.get_suitable_graphics_queue()},
-        surface_extent{window.get_extent().width, window.get_extent().height}
+                                 const std::vector<VkSurfaceFormatKHR>& surface_format_priority_list)
+        : device{device}, window{window}, queue{device.get_suitable_graphics_queue()},
+          surface_extent{window.GetExtent().width, window.GetExtent().height}
     {
         if (surface != VK_NULL_HANDLE)
         {
@@ -461,7 +461,7 @@ namespace vkb
 
             VkDisplayPresentInfoKHR disp_present_info{};
             if (device.is_extension_supported(VK_KHR_DISPLAY_SWAPCHAIN_EXTENSION_NAME) &&
-                window.get_display_present_info(&disp_present_info, surface_extent.width, surface_extent.height))
+                window.GetDisplayPresentInfo(&disp_present_info, surface_extent.width, surface_extent.height))
             {
                 // Add display present info if supported and wanted
                 present_info.pNext = &disp_present_info;

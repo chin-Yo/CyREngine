@@ -244,7 +244,7 @@ namespace vkb
         /// 当前活动帧的索引
         uint32_t active_frame_index{0};
 
-        /// 标记一帧是否处于活动状态
+        // Mark whether a frame is in an active state
         bool frame_active{false};
 
         RenderTarget::CreateFunc create_render_target_func = RenderTarget::DEFAULT_CREATE_FUNC;

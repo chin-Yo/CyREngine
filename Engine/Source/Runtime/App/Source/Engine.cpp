@@ -8,14 +8,17 @@
 #include <algorithm>
 
 const float Engine::FPSAlpha = 1.f / 100;
+
 void Engine::LogicalTick(float DeltaTime)
 {
 }
+
 bool Engine::RendererTick(float DeltaTime)
 {
-    GRuntimeGlobalContext.m_render_system->renderLoop(DeltaTime);
+    GRuntimeGlobalContext.renderSystem->Update(DeltaTime);
     return true;
 }
+
 void Engine::CalculateFPS(float DeltaTime)
 {
     DeltaTime = std::min<float>(DeltaTime, 0.5f);
@@ -40,7 +43,7 @@ float Engine::CalculateDeltaTime()
     return duration.count() / 1000000.0f;
 }
 
-void Engine::LimitFPS(float &DeltaTime)
+void Engine::LimitFPS(float& DeltaTime)
 {
     if (MaxFPS <= 0)
         return; // No limit
@@ -50,7 +53,8 @@ void Engine::LimitFPS(float &DeltaTime)
 
     // Calculate actual elapsed time
     auto frameEndTime = std::chrono::steady_clock::now();
-    float actualFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(frameEndTime - FrameStartTimePoint).count() / 1000000.0f;
+    float actualFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(frameEndTime - FrameStartTimePoint).
+        count() / 1000000.0f;
 
     // If frame time is shorter than target, sleep for remaining time
     if (actualFrameTime < targetFrameTime)
@@ -66,19 +70,40 @@ void Engine::LimitFPS(float &DeltaTime)
     FrameStartTimePoint = std::chrono::steady_clock::now();
 }
 
-void Engine::StartEngine(const std::string &ConfigFilePath)
+void Engine::SetIsIconify(bool bIsIconify)
+{
+    bIsMinimized = bIsIconify;
+}
+
+void Engine::StartEngine(const std::string& ConfigFilePath)
 {
     Logger::Init();
-    GRuntimeGlobalContext.startSystems(ConfigFilePath);
-    LOG_INFO("Engine started");
+    GRuntimeGlobalContext.StartSystems(ConfigFilePath);
+    LOG_INFO("Engine started")
 }
 
 void Engine::ShutdownEngine()
 {
+    GRuntimeGlobalContext.ShutdownSystems();
+    LOG_INFO("Engine exit")
 }
 
 void Engine::Initialize()
 {
+    ApplicationOptions app_options;
+    app_options.benchmark_enabled = false;
+    app_options.window = GRuntimeGlobalContext.windowSystem.get();
+    GRuntimeGlobalContext.windowSystem->RegisterOnWindowIconifyFunc([this](bool bIsIconify)
+        {
+            if (this != nullptr)
+                this->SetIsIconify(bIsIconify);
+        }
+    );
+    if (!GRuntimeGlobalContext.renderSystem->Prepare(app_options))
+    {
+        LOG_CRITICAL("Prepare failed !!!")
+        std::abort();
+    }
 }
 
 void Engine::Clear()
@@ -94,11 +119,19 @@ bool Engine::TickOneFrame(float DeltaTime)
     LogicalTick(DeltaTime);
     CalculateFPS(DeltaTime);
 
-    RendererTick(DeltaTime);
+    if (!bIsMinimized)
+    {
+        RendererTick(DeltaTime);
+    }
 
-    GRuntimeGlobalContext.windowSystem->pollEvents();
-    GRuntimeGlobalContext.windowSystem->setTitle(std::string("CyREngine - " + std::to_string(GetFPS()) + " FPS").c_str());
-    const bool should_window_close = GRuntimeGlobalContext.windowSystem->shouldClose();
+    GRuntimeGlobalContext.windowSystem->ProcessEvents();
+    GRuntimeGlobalContext.windowSystem->SetTitle(
+        std::string("CyREngine - " + std::to_string(GetFPS()) + " FPS").c_str());
+    const bool should_window_close = GRuntimeGlobalContext.windowSystem->ShouldClose();
+    if (should_window_close)
+    {
+        GRuntimeGlobalContext.renderSystem->Finish();
+    }
     return !should_window_close;
 }
 
